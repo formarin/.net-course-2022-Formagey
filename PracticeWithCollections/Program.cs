@@ -15,6 +15,7 @@ namespace PracticeWithCollections
             var clientList = testDataGenerator.GetClientList();
             var clientDictionary = testDataGenerator.GetClientDictionary();
             var sw = new Stopwatch();
+            int k = 10;
 
             var lastListClientPhone = clientList.Last().PhoneNumber;
             var lastListClient = new Client
@@ -28,30 +29,51 @@ namespace PracticeWithCollections
                 PhoneNumber = lastDictionaryClientPhone
             };
 
-            sw.Start();
-            var foundClients1 = clientList.FirstOrDefault(client => client.PhoneNumber == lastListClientPhone);
-            sw.Stop();
-            Console.WriteLine(sw.ElapsedTicks);
+
+            for (int i = 0; i < k; i++)
+            {
+                sw.Start();
+                var foundClients1 = clientList.FirstOrDefault(client => client.PhoneNumber == lastListClientPhone);
+                sw.Stop();
+            }
+            Console.WriteLine($"{sw.ElapsedTicks / k,5} in list comparing by client.PhoneNumber");
 
             sw.Restart();
-            var foundClients11 = clientList.FirstOrDefault(client => client == lastListClient);
-            sw.Stop();
-            Console.WriteLine(sw.ElapsedTicks);
+            for (int i = 0; i < k; i++)
+            {
+                sw.Start();
+                var foundClients11 = clientList.FirstOrDefault(client => client == lastListClient);
+                sw.Stop();
+            }
+            Console.WriteLine($"{sw.ElapsedTicks / k,5} in list comparing by client");
 
             sw.Restart();
-            var foundClients2 = clientDictionary.FirstOrDefault(client => client.Value.PhoneNumber == lastDictionaryClientPhone);
-            sw.Stop();
-            Console.WriteLine(sw.ElapsedTicks);
+            for (int i = 0; i < k; i++)
+            {
+                sw.Start();
+                var foundClients2 = clientDictionary.FirstOrDefault(client => client.Value.PhoneNumber == lastDictionaryClientPhone);
+                sw.Stop();
+            }
+            Console.WriteLine($"{sw.ElapsedTicks / k,5} in dictionary comparing by client.PhoneNumber");
 
             sw.Restart();
-            var foundClients22 = clientDictionary.FirstOrDefault(client => client.Value == lastDictionaryClient);
-            sw.Stop();
-            Console.WriteLine(sw.ElapsedTicks);
+            for (int i = 0; i < k; i++)
+            {
+                sw.Start();
+                var foundClients22 = clientDictionary.FirstOrDefault(client => client.Value == lastDictionaryClient);
+                sw.Stop();
+            }
+            Console.WriteLine($"{sw.ElapsedTicks / k,5} in dictionary comparing by client");
 
             sw.Restart();
-            var foundClients3 = clientDictionary[lastDictionaryClientPhone];
-            sw.Stop();
-            Console.WriteLine(sw.ElapsedTicks);
+            for (int i = 0; i < k; i++)
+            {
+                sw.Start();
+                var foundClients3 = clientDictionary[lastDictionaryClientPhone];
+                sw.Stop();
+            }
+            Console.WriteLine($"{sw.ElapsedTicks / k,5} in dictionary by index");
+
 
             var clientsAgedLess30 = clientList.Where(client => (DateTime.Now.Year - client.DateOfBirth.Year) < 30).ToList();
 
