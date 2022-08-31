@@ -53,6 +53,18 @@ namespace PracticeWithCollections
             sw.Stop();
             Console.WriteLine(sw.ElapsedTicks);
 
+            var clientsAgedLess30 = clientList.Where(client => (DateTime.Now.Year - client.DateOfBirth.Year) < 30).ToList();
+
+            var minSalary = employeeList[0].Salary;
+            foreach (var employee in employeeList)
+            {
+                if (employee.Salary < minSalary)
+                {
+                    minSalary = employee.Salary;
+                }
+            }
+            var foundEmployee = employeeList.Where(employee => employee.Salary == minSalary).ToList();
+
             Console.ReadKey();
         }
     }
