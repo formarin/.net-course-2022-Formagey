@@ -1,6 +1,7 @@
 ﻿using Bogus;
 using Models;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Services
 {
@@ -8,58 +9,27 @@ namespace Services
     {
         public List<Employee> GetEmployeeList()
         {
-            var list = new List<Employee>();
-            for (int i = 0; i < 1000; i++)
-            {
-                list.Add(CreateEmployee());
-            }
-            return list;
+            var employee = new Faker<Employee>("ru")
+               .RuleFor(e => e.FirstName, f => f.Person.FirstName)
+               .RuleFor(e => e.LastName, f => f.Person.LastName)
+               .RuleFor(e => e.DateOfBirth, f => f.Person.DateOfBirth)
+               .RuleFor(e => e.Salary, f => f.Random.Int(500, 5000));
+
+            return employee.Generate(1000);
         }
         public List<Client> GetClientList()
         {
-            var list = new List<Client>();
-            for (int i = 0; i < 1000; i++)
-            {
-                list.Add(CreateClient());
-            }
-            return list;
+            var client = new Faker<Client>("ru")
+               .RuleFor(c => c.FirstName, f => f.Person.FirstName)
+               .RuleFor(c => c.LastName, f => f.Person.LastName)
+               .RuleFor(c => c.DateOfBirth, f => f.Person.DateOfBirth)
+               .RuleFor(c => c.PhoneNumber, f => 77700000 + f.UniqueIndex);
+
+            return client.Generate(1000);
         }
         public Dictionary<int, Client> GetClientDictionary()
         {
-            var dictionary = new Dictionary<int, Client>();
-            for (int i = 0; i < 1000; i++)
-            {
-                Client client;
-                do
-                {
-                    client = CreateClient();
-                }
-                while (dictionary.ContainsKey(client.PhoneNumber));
-                dictionary.Add(client.PhoneNumber, client);
-            }
-            return dictionary;
-        }
-        private Client CreateClient()
-        {
-            var faker = new Faker();
-            return new Client
-            {
-                FirstName = faker.Person.FirstName,
-                LastName = faker.Person.LastName,
-                DateOfBirth = faker.Person.DateOfBirth,
-                PhoneNumber = faker.Phone.Random.Int(77700000, 77999999)
-            };
-        }
-        private Employee CreateEmployee()
-        {
-            var faker = new Faker();
-            return new Employee
-            {
-                FirstName = faker.Person.FirstName,
-                LastName = faker.Person.LastName,
-                DateOfBirth = faker.Person.DateOfBirth,
-                Salary = faker.Random.Int(500, 5000)
-            };
+            return GetClientList().ToDictionary(keySelector: client => client.PhoneNumber, elementSelector: client => client);
         }
     }
 }
