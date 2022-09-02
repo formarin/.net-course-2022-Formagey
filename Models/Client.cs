@@ -2,8 +2,6 @@
 {
     public class Client : Person
     {
-        public int PhoneNumber { get; set; }
-
         public override bool Equals(object obj)
         {
             if (obj == null)
@@ -28,6 +26,5 @@
         {
             return PhoneNumber.GetHashCode();
         }
-
     }
 }

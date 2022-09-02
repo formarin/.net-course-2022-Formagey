@@ -29,7 +29,38 @@ namespace Services
         }
         public Dictionary<int, Client> GetClientDictionary()
         {
-            return GetClientList().ToDictionary(keySelector: client => client.PhoneNumber, elementSelector: client => client);
+            return GetClientList().ToDictionary(
+                keySelector: client => client.PhoneNumber,
+                elementSelector: client => client);
+        }
+        public Dictionary<Client, List<Account>> GetClientAndAccountDictionary()
+        {
+            var faker = new Faker();
+            var currencies = new List<Account>
+                {
+                    new Account
+                    {
+                        Amount = faker.Random.UInt(),
+                        Currency = new Currency{ Code = 498, Name = "MDL"}
+                    },
+                    new Account
+                    {
+                        Amount = faker.Random.UInt(),
+                        Currency = new Currency{ Code = 643, Name = "RUB"}
+                    },
+                    new Account
+                    {
+                        Amount = faker.Random.UInt(),
+                        Currency = new Currency{ Code = 840, Name = "USD"}
+                    },
+                    new Account
+                    {
+                        Amount = faker.Random.UInt(),
+                        Currency = new Currency{ Code = 978, Name = "EUR"}
+                    }
+                };
+            return GetClientList().ToDictionary(keySelector: client => client,
+                elementSelector: client => faker.Random.ListItems(currencies, faker.Random.Int(1, currencies.Count)).ToList());
         }
     }
 }

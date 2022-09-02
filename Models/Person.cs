@@ -7,5 +7,6 @@ namespace Models
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public DateTime DateOfBirth { get; set; }
+        public int PhoneNumber { get; set; }
     }
 }
