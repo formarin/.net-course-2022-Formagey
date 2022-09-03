@@ -13,17 +13,16 @@ namespace ServiceTests
         {
             //Arrange
             var testDataGenerator = new TestDataGenerator();
-            Dictionary<Client, List<Account>> dictionary;
-            var client = new Client { PhoneNumber = 77707000 };
-
-            //Act
-            dictionary = testDataGenerator.GetClientAndAccountDictionary();
-            dictionary.Add(new Client { PhoneNumber = 77707000 }, new List<Account>{
+            var dictionary = testDataGenerator.GetClientAndAccountDictionary();
+            dictionary.Add(new Client { PhoneNumber = 77707000 }, new Account[]{
                 new Account
                 {
                     Amount = 50,
                     Currency = new Currency { Code = 840, Name = "USD" }
                 }});
+            var client = new Client { PhoneNumber = 77707000 };
+
+            //Act
             var accountList = dictionary[client];
 
             //Assert
@@ -34,15 +33,15 @@ namespace ServiceTests
         {
             //Arrange
             var testDataGenerator = new TestDataGenerator();
-            List<Employee> list;
+            var list = testDataGenerator.GetEmployeeList();
+            list.Add(new Employee { PhoneNumber = 77707000 });
             var employee = new Employee { PhoneNumber = 77707000 };
 
             //Act
-            list = testDataGenerator.GetEmployeeList();
-            list.Add(new Employee { PhoneNumber = 77707000 });
+            var searchedEmployee = list.Find(thisEmployee => thisEmployee == employee);
 
             //Assert
-            Assert.Contains(employee, list);
+            Assert.NotNull(searchedEmployee);
         }
     }
 }

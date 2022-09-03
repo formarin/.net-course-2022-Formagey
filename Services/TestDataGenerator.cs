@@ -33,10 +33,10 @@ namespace Services
                 keySelector: client => client.PhoneNumber,
                 elementSelector: client => client);
         }
-        public Dictionary<Client, List<Account>> GetClientAndAccountDictionary()
+        public Dictionary<Client, Account[]> GetClientAndAccountDictionary()
         {
             var faker = new Faker();
-            var currencies = new List<Account>
+            var currencies = new Account[]
                 {
                     new Account
                     {
@@ -60,7 +60,7 @@ namespace Services
                     }
                 };
             return GetClientList().ToDictionary(keySelector: client => client,
-                elementSelector: client => faker.Random.ListItems(currencies, faker.Random.Int(1, currencies.Count)).ToList());
+                elementSelector: client => faker.Random.ListItems(currencies, faker.Random.Int(1, currencies.Length)).ToArray());
         }
     }
 }
