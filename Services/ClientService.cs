@@ -19,7 +19,18 @@ namespace Services
                 throw new NoPassportDataException("Наличие всех паспортных данных обязательно.");
             }
 
-            _clientDictionary.Add(client, new List<Account> { new Account { Amount = 0, Currency = new Currency { Name = "USD", Code = 840 } } });
+            _clientDictionary.Add(client, new List<Account>
+            {
+                new Account
+                {
+                    Amount = 0,
+                    Currency = new Currency
+                    {
+                        Name = "USD",
+                        Code = 840
+                    }
+                }
+            });
         }
     }
 }
