@@ -14,13 +14,30 @@ namespace ServiceTests
             //Arrange
             var testDataGenerator = new TestDataGenerator();
             var dictionary = testDataGenerator.GetClientAndAccountDictionary();
-            dictionary.Add(new Client { PhoneNumber = 77707000 }, new Account[]{
+            dictionary.Add(new Client
+            {
+                FirstName = "firstName",
+                LastName = "lastName",
+                PhoneNumber = 77707000,
+                PassportNumber = 900000000,
+                DateOfBirth = new DateTime(2000, 1, 1)
+            },
+            new Account[]
+            {
                 new Account
                 {
                     Amount = 50,
                     Currency = new Currency { Code = 840, Name = "USD" }
-                }});
-            var client = new Client { PhoneNumber = 77707000 };
+                }
+            });
+            var client = new Client
+            {
+                FirstName = "firstName",
+                LastName = "lastName",
+                PhoneNumber = 77707000,
+                PassportNumber = 900000000,
+                DateOfBirth = new DateTime(2000, 1, 1)
+            };
 
             //Act
             var accountList = dictionary[client];
@@ -34,8 +51,22 @@ namespace ServiceTests
             //Arrange
             var testDataGenerator = new TestDataGenerator();
             var list = testDataGenerator.GetEmployeeList();
-            list.Add(new Employee { PhoneNumber = 77707000 });
-            var employee = new Employee { PhoneNumber = 77707000 };
+            list.Add(new Employee
+            {
+                FirstName = "firstName",
+                LastName = "lastName",
+                PhoneNumber = 77707000,
+                PassportNumber = 900000000,
+                DateOfBirth = new DateTime(2000, 1, 1)
+            });
+            var employee = new Employee
+            {
+                FirstName = "firstName",
+                LastName = "lastName",
+                PhoneNumber = 77707000,
+                PassportNumber = 900000000,
+                DateOfBirth = new DateTime(2000, 1, 1)
+            };
 
             //Act
             var searchedEmployee = list.Find(thisEmployee => thisEmployee == employee);

@@ -13,7 +13,8 @@ namespace Services
                .RuleFor(e => e.FirstName, f => f.Person.FirstName)
                .RuleFor(e => e.LastName, f => f.Person.LastName)
                .RuleFor(e => e.DateOfBirth, f => f.Person.DateOfBirth)
-               .RuleFor(e => e.Salary, f => f.Random.Int(500, 5000));
+               .RuleFor(e => e.Salary, f => f.Random.Int(500, 5000))
+               .RuleFor(e => e.PassportNumber, f => int.MaxValue - f.UniqueIndex);
 
             return employee.Generate(1000);
         }
@@ -23,7 +24,8 @@ namespace Services
                .RuleFor(c => c.FirstName, f => f.Person.FirstName)
                .RuleFor(c => c.LastName, f => f.Person.LastName)
                .RuleFor(c => c.DateOfBirth, f => f.Person.DateOfBirth)
-               .RuleFor(c => c.PhoneNumber, f => 77700000 + f.UniqueIndex);
+               .RuleFor(c => c.PhoneNumber, f => 77700000 + f.UniqueIndex)
+               .RuleFor(c => c.PassportNumber, f => int.MaxValue - f.UniqueIndex);
 
             return client.Generate(1000);
         }
