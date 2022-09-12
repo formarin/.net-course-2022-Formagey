@@ -11,7 +11,7 @@ namespace ServiceTests
     public class ClientServiceTests
     {
         [Fact]
-        public void AddClient_addsClient()
+        public void AddClient_PositiveTest()
         {
             //Arrange
             var clientStorage = new ClientStorage();

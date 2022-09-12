@@ -11,7 +11,7 @@ namespace ServiceTests
     public class EmployeeServiceTests
     {
         [Fact]
-        public void AddEmployee_addsEmployee()
+        public void AddEmployee_PositiveTest()
         {
             //Arrange
             var employeeStorage = new EmployeeStorage();
