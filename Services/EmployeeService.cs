@@ -1,17 +1,18 @@
 ﻿using Models;
 using Services.Exceptions;
 using Services.Filters;
+using Services.Storages;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Services
 {
-    public class EmployeeService
+    public class EmployeeService<T> where T : IEmployeeStorage
     {
-        private EmployeeStorage _employeeStorage = new();
+        public T _employeeStorage;
 
-        public EmployeeService(EmployeeStorage employeeStorage)
+        public EmployeeService(T employeeStorage)
         {
             _employeeStorage = employeeStorage;
         }
@@ -30,9 +31,19 @@ namespace Services
             _employeeStorage.Add(employee);
         }
 
+        public void UpdateEmployee(Employee employee)
+        {
+            _employeeStorage.Update(employee);
+        }
+
+        public void DeleteEmployee(Employee employee)
+        {
+            _employeeStorage.Delete(employee);
+        }
+
         public List<Employee> GetEmployees(EmployeeFilter filter)
         {
-            var query = _employeeStorage._employeeList.Where(_ => true);
+            var query = _employeeStorage.Data.Where(_ => true);
 
             if (filter.FirstName != null)
                 query = query.Where(x => x.FirstName == filter.FirstName);

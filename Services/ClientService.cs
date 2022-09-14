@@ -1,17 +1,18 @@
 ﻿using Models;
 using Services.Exceptions;
 using Services.Filters;
+using Services.Storages;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Services
 {
-    public class ClientService
+    public class ClientService<T> where T : IClientStorage
     {
-        public ClientStorage _clientStorage = new();
+        public T _clientStorage;
 
-        public ClientService(ClientStorage clientStorage)
+        public ClientService(T clientStorage)
         {
             _clientStorage = clientStorage;
         }
@@ -31,9 +32,33 @@ namespace Services
             _clientStorage.Add(client);
         }
 
+        public void UpdateClient(Client client)
+        {
+            _clientStorage.Update(client);
+        }
+
+        public void DeleteClient(Client client)
+        {
+            _clientStorage.Delete(client);
+        }
+
+        public void AddAccount(Client client, Account account)
+        {
+            _clientStorage.AddAccount(client, account);
+        }
+
+        public void UpdateAccount(Client client, Account account)
+        {
+            _clientStorage.UpdateAccount(client, account);
+        }
+        public void DeleteAccount(Client client, Account account)
+        {
+            _clientStorage.DeleteAccount(client, account);
+        }
+
         public Dictionary<Client, List<Account>> GetClients(ClientFilter filter)
         {
-            var query = _clientStorage._clientDictionary.Where(_ => true);
+            var query = _clientStorage.Data.Where(_ => true);
 
             if (filter.FirstName != null)
                 query = query.Where(x => x.Key.FirstName == filter.FirstName);

@@ -7,7 +7,7 @@ namespace Services
 {
     public class TestDataGenerator
     {
-        public List<Employee> GetEmployeeList()
+        public List<Employee> GetEmployeeList(int count)
         {
             var employee = new Faker<Employee>("ru")
                .RuleFor(e => e.FirstName, f => f.Person.FirstName)
@@ -16,9 +16,9 @@ namespace Services
                .RuleFor(e => e.Salary, f => f.Random.Int(500, 5000))
                .RuleFor(e => e.PassportNumber, f => int.MaxValue - f.UniqueIndex);
 
-            return employee.Generate(1000);
+            return employee.Generate(count);
         }
-        public List<Client> GetClientList()
+        public List<Client> GetClientList(int count)
         {
             var client = new Faker<Client>("ru")
                .RuleFor(c => c.FirstName, f => f.Person.FirstName)
@@ -27,15 +27,15 @@ namespace Services
                .RuleFor(c => c.PhoneNumber, f => 77700000 + f.UniqueIndex)
                .RuleFor(c => c.PassportNumber, f => int.MaxValue - f.UniqueIndex);
 
-            return client.Generate(1000);
+            return client.Generate(count);
         }
-        public Dictionary<int, Client> GetClientDictionary()
+        public Dictionary<int, Client> GetClientDictionary(int count)
         {
-            return GetClientList().ToDictionary(
+            return GetClientList(count).ToDictionary(
                 keySelector: client => client.PhoneNumber,
                 elementSelector: client => client);
         }
-        public Dictionary<Client, Account[]> GetClientAndAccountDictionary()
+        public Dictionary<Client, Account[]> GetClientAndAccountDictionary(int count)
         {
             var faker = new Faker();
             var currencies = new Account[]
@@ -61,7 +61,7 @@ namespace Services
                         Currency = new Currency{ Code = 978, Name = "EUR"}
                     }
                 };
-            return GetClientList().ToDictionary(keySelector: client => client,
+            return GetClientList(count).ToDictionary(keySelector: client => client,
                 elementSelector: client => faker.Random.ListItems(currencies, faker.Random.Int(1, currencies.Length)).ToArray());
         }
     }

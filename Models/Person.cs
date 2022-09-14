@@ -9,5 +9,6 @@ namespace Models
         public DateTime DateOfBirth { get; set; }
         public int PhoneNumber { get; set; }
         public int PassportNumber { get; set; }
+        public int BonusCount { get; set; }
     }
 }

@@ -1,14 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Models
+﻿namespace Models
 {
     public class Account
     {
-        public Currency Currency { get; set; }
+        public Currency Currency { get; set; } =
+            new Currency
+            {
+                Code = 840,
+                Name = "USD"
+            };
         public double Amount { get; set; }
     }
 }

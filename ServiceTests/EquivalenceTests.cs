@@ -13,7 +13,7 @@ namespace ServiceTests
         {
             //Arrange
             var testDataGenerator = new TestDataGenerator();
-            var dictionary = testDataGenerator.GetClientAndAccountDictionary();
+            var dictionary = testDataGenerator.GetClientAndAccountDictionary(1000);
             dictionary.Add(new Client
             {
                 FirstName = "firstName",
@@ -50,7 +50,7 @@ namespace ServiceTests
         {
             //Arrange
             var testDataGenerator = new TestDataGenerator();
-            var list = testDataGenerator.GetEmployeeList();
+            var list = testDataGenerator.GetEmployeeList(1000);
             list.Add(new Employee
             {
                 FirstName = "firstName",
