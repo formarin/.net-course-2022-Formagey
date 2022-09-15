@@ -12,7 +12,7 @@
             {
                 return false;
             }
-            return ((Client)obj).PhoneNumber == PhoneNumber;
+            return ((Client)obj).PassportNumber == PassportNumber;
         }
         public static bool operator ==(Client client1, Client client2)
         {
@@ -24,7 +24,7 @@
         }
         public override int GetHashCode()
         {
-            return PhoneNumber.GetHashCode();
+            return PassportNumber.GetHashCode();
         }
     }
 }
