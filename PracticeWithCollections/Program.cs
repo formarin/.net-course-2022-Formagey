@@ -84,8 +84,8 @@ namespace PracticeWithCollections
 
 
             var clientStorage = new ClientStorage();
-            clientStorage.Add(testDataGenerator.GetClientList(1000));
             var clientService = new ClientService<IClientStorage>(clientStorage);
+            clientService.AddClientList(testDataGenerator.GetClientList(1000));
             var allClients = clientService.GetClients(new ClientFilter());
 
             var youngestClient = allClients.Where(x => x.Key.DateOfBirth == allClients.Max(x => x.Key.DateOfBirth)).FirstOrDefault();

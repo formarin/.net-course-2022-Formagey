@@ -88,8 +88,8 @@ namespace ServiceTests
             //Arrange
             var testDataGenerator = new TestDataGenerator();
             var clientStorage = new ClientStorage();
-            clientStorage.Add(testDataGenerator.GetClientList(1000));
             var clientService = new ClientService<IClientStorage>(clientStorage);
+            clientService.AddClientList(testDataGenerator.GetClientList(1000));
             var filterByFirstName = new ClientFilter()
             {
                 FirstName = "Ирина"
@@ -108,8 +108,8 @@ namespace ServiceTests
             //Arrange
             var testDataGenerator = new TestDataGenerator();
             var clientStorage = new ClientStorage();
-            clientStorage.Add(testDataGenerator.GetClientList(1000));
             var clientService = new ClientService<IClientStorage>(clientStorage);
+            clientService.AddClientList(testDataGenerator.GetClientList(1000));
             var filterByLastName = new ClientFilter()
             {
                 LastName = "Васильев"
@@ -128,9 +128,8 @@ namespace ServiceTests
             //Arrange
             var testDataGenerator = new TestDataGenerator();
             var clientStorage = new ClientStorage();
-            clientStorage.Add(testDataGenerator.GetClientList(1000));
-
             var clientService = new ClientService<IClientStorage>(clientStorage);
+            clientService.AddClientList(testDataGenerator.GetClientList(1000));
             var filterByPhoneNumber = new ClientFilter()
             {
                 PhoneNumber = 77700077
@@ -149,9 +148,8 @@ namespace ServiceTests
             //Arrange
             var testDataGenerator = new TestDataGenerator();
             var clientStorage = new ClientStorage();
-            clientStorage.Add(testDataGenerator.GetClientList(1000));
-
             var clientService = new ClientService<IClientStorage>(clientStorage);
+            clientService.AddClientList(testDataGenerator.GetClientList(1000));
             var filterByPassportNumber = new ClientFilter()
             {
                 PassportNumber = 900000000
@@ -170,9 +168,8 @@ namespace ServiceTests
             //Arrange
             var testDataGenerator = new TestDataGenerator();
             var clientStorage = new ClientStorage();
-            clientStorage.Add(testDataGenerator.GetClientList(1000));
-
             var clientService = new ClientService<IClientStorage>(clientStorage);
+            clientService.AddClientList(testDataGenerator.GetClientList(1000));
             var filterByDateOfBirth = new ClientFilter()
             {
                 MinDate = new DateTime(1990, 1, 1),
@@ -194,8 +191,8 @@ namespace ServiceTests
             //Arrange
             var testDataGenerator = new TestDataGenerator();
             var clientStorage = new ClientStorage();
-            clientStorage.Add(testDataGenerator.GetClientList(5));
             var clientService = new ClientService<IClientStorage>(clientStorage);
+            clientService.AddClientList(testDataGenerator.GetClientList(5));
             var client = clientStorage.Data.Keys.First();
 
             //Act
@@ -211,8 +208,8 @@ namespace ServiceTests
             //Arrange
             var testDataGenerator = new TestDataGenerator();
             var clientStorage = new ClientStorage();
-            clientStorage.Add(testDataGenerator.GetClientList(5));
             var clientService = new ClientService<IClientStorage>(clientStorage);
+            clientService.AddClientList(testDataGenerator.GetClientList(5));
             var client = clientStorage.Data.Keys.First();
             var clientPassport = client.PassportNumber;
 
@@ -230,8 +227,8 @@ namespace ServiceTests
             //Arrange
             var testDataGenerator = new TestDataGenerator();
             var clientStorage = new ClientStorage();
-            clientStorage.Add(testDataGenerator.GetClientList(1000));
             var clientService = new ClientService<IClientStorage>(clientStorage);
+            clientService.AddClientList(testDataGenerator.GetClientList(1000));
             var client = clientStorage.Data.First(x => !x.Value.Contains(new Account())).Key;
             var account = new Account();
 
@@ -248,8 +245,8 @@ namespace ServiceTests
             //Arrange
             var testDataGenerator = new TestDataGenerator();
             var clientStorage = new ClientStorage();
-            clientStorage.Add(testDataGenerator.GetClientList(1000));
             var clientService = new ClientService<IClientStorage>(clientStorage);
+            clientService.AddClientList(testDataGenerator.GetClientList(1000));
             var client = clientStorage.Data.First().Key;
             var account = clientStorage.Data[client].First();
             account.Amount += 1000;
@@ -267,8 +264,8 @@ namespace ServiceTests
             //Arrange
             var testDataGenerator = new TestDataGenerator();
             var clientStorage = new ClientStorage();
-            clientStorage.Add(testDataGenerator.GetClientList(1000));
             var clientService = new ClientService<IClientStorage>(clientStorage);
+            clientService.AddClientList(testDataGenerator.GetClientList(1000));
             var client = clientStorage.Data.First().Key;
             var account = clientStorage.Data[client].First();
 

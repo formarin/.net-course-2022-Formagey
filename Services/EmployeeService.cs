@@ -31,9 +31,20 @@ namespace Services
             _employeeStorage.Add(employee);
         }
 
+        public void AddEmployeeList(List<Employee> employeeList)
+        {
+            foreach (var employee in employeeList)
+            {
+                AddEmployee(employee);
+            }
+        }
+
         public void UpdateEmployee(Employee employee)
         {
-            _employeeStorage.Update(employee);
+            if (_employeeStorage.Data.Contains(employee))
+                _employeeStorage.Update(employee);
+            else
+                throw new ArgumentException("В базе данных нет такого сотрудника");
         }
 
         public void DeleteEmployee(Employee employee)

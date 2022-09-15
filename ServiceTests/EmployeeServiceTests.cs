@@ -68,8 +68,8 @@ namespace ServiceTests
             //Arrange
             var testDataGenerator = new TestDataGenerator();
             var employeeStorage = new EmployeeStorage();
-            employeeStorage.Add(testDataGenerator.GetEmployeeList(1000));
             var employeeService = new EmployeeService<IEmployeeStorage>(employeeStorage);
+            employeeService.AddEmployeeList(testDataGenerator.GetEmployeeList(1000));
             var filterByFirstName = new EmployeeFilter()
             {
                 FirstName = "Ирина"
@@ -88,8 +88,8 @@ namespace ServiceTests
             //Arrange
             var testDataGenerator = new TestDataGenerator();
             var employeeStorage = new EmployeeStorage();
-            employeeStorage.Add(testDataGenerator.GetEmployeeList(1000));
             var employeeService = new EmployeeService<IEmployeeStorage>(employeeStorage);
+            employeeService.AddEmployeeList(testDataGenerator.GetEmployeeList(1000));
             var filterByLastName = new EmployeeFilter()
             {
                 LastName = "Васильев"
@@ -108,9 +108,8 @@ namespace ServiceTests
             //Arrange
             var testDataGenerator = new TestDataGenerator();
             var employeeStorage = new EmployeeStorage();
-            employeeStorage.Add(testDataGenerator.GetEmployeeList(1000));
-
             var employeeService = new EmployeeService<IEmployeeStorage>(employeeStorage);
+            employeeService.AddEmployeeList(testDataGenerator.GetEmployeeList(1000));
             var filterByPhoneNumber = new EmployeeFilter()
             {
                 PhoneNumber = 77700077
@@ -129,9 +128,8 @@ namespace ServiceTests
             //Arrange
             var testDataGenerator = new TestDataGenerator();
             var employeeStorage = new EmployeeStorage();
-            employeeStorage.Add(testDataGenerator.GetEmployeeList(1000));
-
             var employeeService = new EmployeeService<IEmployeeStorage>(employeeStorage);
+            employeeService.AddEmployeeList(testDataGenerator.GetEmployeeList(1000));
             var filterByPassportNumber = new EmployeeFilter()
             {
                 PassportNumber = 900000000
@@ -150,9 +148,8 @@ namespace ServiceTests
             //Arrange
             var testDataGenerator = new TestDataGenerator();
             var employeeStorage = new EmployeeStorage();
-            employeeStorage.Add(testDataGenerator.GetEmployeeList(1000));
-
             var employeeService = new EmployeeService<IEmployeeStorage>(employeeStorage);
+            employeeService.AddEmployeeList(testDataGenerator.GetEmployeeList(1000));
             var filterByDateOfBirth = new EmployeeFilter()
             {
                 MinDate = new DateTime(1990, 1, 1),
@@ -174,8 +171,8 @@ namespace ServiceTests
             //Arrange
             var testDataGenerator = new TestDataGenerator();
             var employeeStorage = new EmployeeStorage();
-            employeeStorage.Add(testDataGenerator.GetEmployeeList(5));
             var employeeService = new EmployeeService<IEmployeeStorage>(employeeStorage);
+            employeeService.AddEmployeeList(testDataGenerator.GetEmployeeList(5));
             var employee = employeeStorage.Data.First();
 
             //Act
@@ -191,8 +188,8 @@ namespace ServiceTests
             //Arrange
             var testDataGenerator = new TestDataGenerator();
             var employeeStorage = new EmployeeStorage();
-            employeeStorage.Add(testDataGenerator.GetEmployeeList(5));
             var employeeService = new EmployeeService<IEmployeeStorage>(employeeStorage);
+            employeeService.AddEmployeeList(testDataGenerator.GetEmployeeList(5));
             var employee = employeeStorage.Data.First();
             var employeePassport = employee.PassportNumber;
 

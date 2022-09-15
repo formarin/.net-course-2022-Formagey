@@ -1,6 +1,7 @@
 ﻿using Models;
 using Services.Storages;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Services
 {
@@ -18,18 +19,10 @@ namespace Services
             Data.Add(employee);
         }
 
-        public void Add(List<Employee> employeeList)
-        {
-            foreach (var employee in employeeList)
-            {
-                Data.Add(employee);
-            }
-        }
-
         public void Update(Employee employee)
         {
-            Data.Remove(employee);
-            Data.Add(employee);
+            var existingEmployee = Data.FirstOrDefault(x => x == employee);
+            existingEmployee = employee;
         }
 
         public void Delete(Employee employee)

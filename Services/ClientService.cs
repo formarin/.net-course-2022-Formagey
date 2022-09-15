@@ -32,9 +32,21 @@ namespace Services
             _clientStorage.Add(client);
         }
 
+        public void AddClientList(List<Client> clientList)
+
+        {
+            foreach (var client in clientList)
+            {
+                AddClient(client);
+            }
+        }
+
         public void UpdateClient(Client client)
         {
-            _clientStorage.Update(client);
+            if (_clientStorage.Data.ContainsKey(client))
+                _clientStorage.Update(client);
+            else
+                throw new ArgumentException("В базе данных нет такого клиента");
         }
 
         public void DeleteClient(Client client)
@@ -49,7 +61,10 @@ namespace Services
 
         public void UpdateAccount(Client client, Account account)
         {
-            _clientStorage.UpdateAccount(client, account);
+            if (_clientStorage.Data[client].Contains(account))
+                _clientStorage.UpdateAccount(client, account);
+            else
+                throw new ArgumentException("В базе данных нет такого аккаунта");
         }
         public void DeleteAccount(Client client, Account account)
         {

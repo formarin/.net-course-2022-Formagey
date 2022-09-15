@@ -1,6 +1,7 @@
 ﻿using Models;
 using Services.Storages;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Services
 {
@@ -15,22 +16,24 @@ namespace Services
 
         public void Add(Client client)
         {
-            Data.Add(client, new List<Account> { new Account() });
-        }
-
-        public void Add(List<Client> clientList)
-        {
-            foreach (var client in clientList)
+            Data.Add(client, new List<Account>
             {
-                Data.Add(client, new List<Account> { new Account() });
-            }
+                new Account
+                {
+                    Amount = 0,
+                    Currency = new Currency
+                    {
+                        Name = "USD",
+                        Code = 840
+                    }
+                }
+            });
         }
 
         public void Update(Client client)
         {
-            var accountList = Data[client];
-            Data.Remove(client);
-            Data.Add(client, accountList);
+            var existingClient = Data.Keys.FirstOrDefault(x => x == client);
+            existingClient = client;
         }
 
         public void Delete(Client client)
@@ -45,8 +48,8 @@ namespace Services
 
         public void UpdateAccount(Client client, Account account)
         {
-            Data[client].Remove(account);
-            Data[client].Add(account);
+            var existingAccount = Data[client].First(x => x == account);
+            existingAccount = account;
         }
         public void DeleteAccount(Client client, Account account)
         {
