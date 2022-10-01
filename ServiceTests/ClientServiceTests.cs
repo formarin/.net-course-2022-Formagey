@@ -2,7 +2,6 @@
 using Services;
 using Services.Exceptions;
 using Services.Filters;
-using Services.Storages;
 using System;
 using System.Linq;
 using Xunit;
@@ -15,10 +14,10 @@ namespace ServiceTests
         public void AddClient_PositiveTest()
         {
             //Arrange
-            var clientStorage = new ClientStorage();
-            var clientService = new ClientService<IClientStorage>(clientStorage);
+            var clientService = new ClientService();
             var client = new Client
             {
+                Id = Guid.NewGuid(),
                 FirstName = "firstName",
                 LastName = "lastName",
                 PhoneNumber = 77700000,
@@ -30,16 +29,21 @@ namespace ServiceTests
             clientService.AddClient(client);
 
             //Assert
-            Assert.Contains(client, clientStorage.Data.Keys);
+            Assert.Equal(client, clientService.GetClient(client.Id));
         }
 
         [Fact]
         public void AddClient_throwsAgeLimitException()
         {
             //Arrange
-            var clientService = new ClientService<IClientStorage>(new ClientStorage());
+            var clientService = new ClientService();
             var client = new Client
             {
+                Id = Guid.NewGuid(),
+                FirstName = "firstName",
+                LastName = "lastName",
+                PhoneNumber = 77700000,
+                PassportNumber = 900000000,
                 DateOfBirth = new DateTime(2020, 1, 1)
             };
 
@@ -51,9 +55,10 @@ namespace ServiceTests
         public void AddClient_throwsNoPassportDataException()
         {
             //Arrange
-            var clientService = new ClientService<IClientStorage>(new ClientStorage());
+            var clientService = new ClientService();
             var client = new Client
             {
+                Id = Guid.NewGuid(),
                 DateOfBirth = new DateTime(2000, 1, 1)
             };
 
@@ -62,44 +67,22 @@ namespace ServiceTests
         }
 
         [Fact]
-        public void AddClient_throwsClientAlreadyExistsException()
-        {
-            //Arrange
-            var clientService = new ClientService<IClientStorage>(new ClientStorage());
-            var client = new Client
-            {
-                FirstName = "firstName",
-                LastName = "lastName",
-                PhoneNumber = 77700000,
-                PassportNumber = 900000000,
-                DateOfBirth = new DateTime(2000, 1, 1)
-            };
-
-            //Act
-            clientService.AddClient(client);
-
-            //Assert
-            Assert.Throws<ArgumentException>(() => clientService.AddClient(client));
-        }
-
-        [Fact]
         public void GetClients_filteredByFirstName()
         {
             //Arrange
             var testDataGenerator = new TestDataGenerator();
-            var clientStorage = new ClientStorage();
-            var clientService = new ClientService<IClientStorage>(clientStorage);
-            clientService.AddClientList(testDataGenerator.GetClientList(1000));
+            var clientService = new ClientService();
+            clientService.AddClientList(testDataGenerator.GetClientList(100));
             var filterByFirstName = new ClientFilter()
             {
                 FirstName = "Ирина"
             };
 
             //Act
-            var filtredClientDictionary = clientService.GetClients(filterByFirstName);
+            var filtredClients = clientService.GetClients(filterByFirstName);
 
             //Assert
-            Assert.True(filtredClientDictionary.All(x => x.Key.FirstName == "Ирина"));
+            Assert.True(filtredClients.All(x => x.FirstName.Contains("Ирина")));
         }
 
         [Fact]
@@ -107,19 +90,18 @@ namespace ServiceTests
         {
             //Arrange
             var testDataGenerator = new TestDataGenerator();
-            var clientStorage = new ClientStorage();
-            var clientService = new ClientService<IClientStorage>(clientStorage);
-            clientService.AddClientList(testDataGenerator.GetClientList(1000));
+            var clientService = new ClientService();
+            clientService.AddClientList(testDataGenerator.GetClientList(100));
             var filterByLastName = new ClientFilter()
             {
                 LastName = "Васильев"
             };
 
             //Act
-            var filtredClientDictionary = clientService.GetClients(filterByLastName);
+            var filtredClients = clientService.GetClients(filterByLastName);
 
             //Assert
-            Assert.True(filtredClientDictionary.All(x => x.Key.LastName == "Васильев"));
+            Assert.True(filtredClients.All(x => x.LastName.Contains("Васильев")));
         }
 
         [Fact]
@@ -127,19 +109,18 @@ namespace ServiceTests
         {
             //Arrange
             var testDataGenerator = new TestDataGenerator();
-            var clientStorage = new ClientStorage();
-            var clientService = new ClientService<IClientStorage>(clientStorage);
-            clientService.AddClientList(testDataGenerator.GetClientList(1000));
+            var clientService = new ClientService();
+            clientService.AddClientList(testDataGenerator.GetClientList(100));
             var filterByPhoneNumber = new ClientFilter()
             {
                 PhoneNumber = 77700077
             };
 
             //Act
-            var filtredClientDictionary = clientService.GetClients(filterByPhoneNumber);
+            var filtredClients = clientService.GetClients(filterByPhoneNumber);
 
             //Assert
-            Assert.True(filtredClientDictionary.All(x => x.Key.PhoneNumber == 77700077));
+            Assert.True(filtredClients.All(x => x.PhoneNumber.ToString().Contains(77700077.ToString())));
         }
 
         [Fact]
@@ -147,19 +128,18 @@ namespace ServiceTests
         {
             //Arrange
             var testDataGenerator = new TestDataGenerator();
-            var clientStorage = new ClientStorage();
-            var clientService = new ClientService<IClientStorage>(clientStorage);
-            clientService.AddClientList(testDataGenerator.GetClientList(1000));
+            var clientService = new ClientService();
+            clientService.AddClientList(testDataGenerator.GetClientList(100));
             var filterByPassportNumber = new ClientFilter()
             {
                 PassportNumber = 900000000
             };
 
             //Act
-            var filtredClientDictionary = clientService.GetClients(filterByPassportNumber);
+            var filtredClients = clientService.GetClients(filterByPassportNumber);
 
             //Assert
-            Assert.True(filtredClientDictionary.All(x => x.Key.PassportNumber == 900000000));
+            Assert.True(filtredClients.All(x => x.PassportNumber.ToString().Contains(900000000.ToString())));
         }
 
         [Fact]
@@ -167,9 +147,8 @@ namespace ServiceTests
         {
             //Arrange
             var testDataGenerator = new TestDataGenerator();
-            var clientStorage = new ClientStorage();
-            var clientService = new ClientService<IClientStorage>(clientStorage);
-            clientService.AddClientList(testDataGenerator.GetClientList(1000));
+            var clientService = new ClientService();
+            clientService.AddClientList(testDataGenerator.GetClientList(100));
             var filterByDateOfBirth = new ClientFilter()
             {
                 MinDate = new DateTime(1990, 1, 1),
@@ -177,12 +156,32 @@ namespace ServiceTests
             };
 
             //Act
-            var filtredClientDictionary = clientService.GetClients(filterByDateOfBirth);
+            var filtredClients = clientService.GetClients(filterByDateOfBirth);
 
             //Assert
-            Assert.True(filtredClientDictionary.All(x =>
-            x.Key.DateOfBirth >= new DateTime(1990, 1, 1) &&
-            x.Key.DateOfBirth <= new DateTime(2000, 1, 1)));
+            Assert.True(filtredClients.All(x =>
+            x.DateOfBirth >= new DateTime(1990, 1, 1) &&
+            x.DateOfBirth <= new DateTime(2000, 1, 1)));
+        }
+
+        [Fact]
+        public void GetClients_filteredWithPagination()
+        {
+            //Arrange
+            var testDataGenerator = new TestDataGenerator();
+            var clientService = new ClientService();
+            clientService.AddClientList(testDataGenerator.GetClientList(100));
+            var filterWithPagination = new ClientFilter()
+            {
+                pageNumber = 3,
+                notesCount = 10
+            };
+
+            //Act
+            var filtredClients = clientService.GetClients(filterWithPagination);
+
+            //Assert
+            Assert.Equal(10, filtredClients.Count);
         }
 
         [Fact]
@@ -190,90 +189,132 @@ namespace ServiceTests
         {
             //Arrange
             var testDataGenerator = new TestDataGenerator();
-            var clientStorage = new ClientStorage();
-            var clientService = new ClientService<IClientStorage>(clientStorage);
-            clientService.AddClientList(testDataGenerator.GetClientList(5));
-            var client = clientStorage.Data.Keys.First();
+            var clientService = new ClientService();
+            var client = new Client
+            {
+                Id = Guid.NewGuid(),
+                FirstName = "firstName",
+                LastName = "lastName",
+                PhoneNumber = 77800000,
+                PassportNumber = 800000000,
+                DateOfBirth = new DateTime(2000, 1, 1)
+            };
+            clientService.AddClient(client);
 
             //Act
-            clientService.DeleteClient(client);
+            clientService.DeleteClient(client.Id);
 
             //Asssert
-            Assert.DoesNotContain(client, clientStorage.Data.Keys);
+            Assert.Null(clientService.GetClient(client.Id));
         }
 
         [Fact]
         public void Update_PositiveTest()
         {
             //Arrange
-            var testDataGenerator = new TestDataGenerator();
-            var clientStorage = new ClientStorage();
-            var clientService = new ClientService<IClientStorage>(clientStorage);
-            clientService.AddClientList(testDataGenerator.GetClientList(5));
-            var client = clientStorage.Data.Keys.First();
-            var clientPassport = client.PassportNumber;
+            var clientService = new ClientService();
+            var client = new Client
+            {
+                Id = Guid.NewGuid(),
+                FirstName = "firstName",
+                LastName = "lastName",
+                PhoneNumber = 77800000,
+                PassportNumber = 800000002,
+                DateOfBirth = new DateTime(2000, 1, 1)
+            };
+            clientService.AddClient(client);
+            client.FirstName = "Саша";
 
             //Act
-            client.LastName = "lastName2";
             clientService.UpdateClient(client);
 
             //Assert
-            Assert.Equal("lastName2", clientStorage.Data.First(x => x.Key.PassportNumber == clientPassport).Key.LastName);
+            Assert.Equal("Саша", clientService.GetClient(client.Id).FirstName);
         }
 
         [Fact]
         public void AddAccount_PositiveTest()
         {
             //Arrange
-            var testDataGenerator = new TestDataGenerator();
-            var clientStorage = new ClientStorage();
-            var clientService = new ClientService<IClientStorage>(clientStorage);
-            clientService.AddClientList(testDataGenerator.GetClientList(1000));
-            var client = clientStorage.Data.First(x => !x.Value.Contains(new Account())).Key;
-            var account = new Account();
+            var clientService = new ClientService();
+            var client = clientService.GetClients(new ClientFilter
+            {
+                PassportNumber = 900000000
+            }).FirstOrDefault();
+            var account = new Account
+            {
+                Id = Guid.NewGuid(),
+                Amount = 0,
+                CurrencyName = "RUP"
+            };
 
             //Act
-            clientService.AddAccount(client, account);
+            clientService.AddAccount(client.Id, account);
 
             //Assert
-            Assert.Contains(account, clientStorage.Data[client]);
+            Assert.Contains(account, clientService.GetClient(client.Id).AccountCollection);
         }
 
         [Fact]
         public void UpdateAccount_PositiveTest()
         {
             //Arrange
-            var testDataGenerator = new TestDataGenerator();
-            var clientStorage = new ClientStorage();
-            var clientService = new ClientService<IClientStorage>(clientStorage);
-            clientService.AddClientList(testDataGenerator.GetClientList(1000));
-            var client = clientStorage.Data.First().Key;
-            var account = clientStorage.Data[client].First();
-            account.Amount += 1000;
+            var clientService = new ClientService();
+            var client = new Client
+            {
+                Id = Guid.NewGuid(),
+                FirstName = "firstName",
+                LastName = "lastName",
+                PhoneNumber = 77800000,
+                PassportNumber = 700000000,
+                DateOfBirth = new DateTime(2000, 1, 1)
+            };
+            clientService.AddClient(client);
+            var account = new Account
+            {
+                Id = Guid.NewGuid(),
+                Amount = 0,
+                CurrencyName = "RUP"
+            };
+            clientService.AddAccount(client.Id, account);
+            account.Amount += 100;
+            var amount = account.Amount;
 
             //Act
-            clientService.UpdateAccount(client, account);
+            clientService.UpdateAccount(client.Id, account);
 
             //Assert
-            Assert.Contains(account, clientStorage.Data[client]);
+            Assert.Contains(account, clientService.GetClient(client.Id).AccountCollection);
         }
 
         [Fact]
         public void DeleteAccount_PositiveTest()
         {
             //Arrange
-            var testDataGenerator = new TestDataGenerator();
-            var clientStorage = new ClientStorage();
-            var clientService = new ClientService<IClientStorage>(clientStorage);
-            clientService.AddClientList(testDataGenerator.GetClientList(1000));
-            var client = clientStorage.Data.First().Key;
-            var account = clientStorage.Data[client].First();
+            var clientService = new ClientService();
+            var client = new Client
+            {
+                Id = Guid.NewGuid(),
+                FirstName = "firstName",
+                LastName = "lastName",
+                PhoneNumber = 77800000,
+                PassportNumber = 700000000,
+                DateOfBirth = new DateTime(2000, 1, 1)
+            };
+            clientService.AddClient(client);
+            var account = new Account
+            {
+                Id = Guid.NewGuid(),
+                Amount = 0,
+                CurrencyName = "RUP"
+            };
+            clientService.AddAccount(client.Id, account);
 
             //Act
-            clientService.DeleteAccount(client, account);
+            clientService.DeleteAccount(client.Id, account);
 
             //Assert
-            Assert.DoesNotContain(account, clientStorage.Data[client]);
+            Assert.DoesNotContain(account, clientService.GetClient(client.Id).AccountCollection);
         }
     }
 }

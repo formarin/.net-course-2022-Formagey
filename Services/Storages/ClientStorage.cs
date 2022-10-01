@@ -1,5 +1,6 @@
 ﻿using Models;
 using Services.Storages;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -21,11 +22,8 @@ namespace Services
                 new Account
                 {
                     Amount = 0,
-                    Currency = new Currency
-                    {
-                        Name = "USD",
-                        Code = 840
-                    }
+                    CurrencyName = "USD",
+                    ClientId = client.Id
                 }
             });
         }

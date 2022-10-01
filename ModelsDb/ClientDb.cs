@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -31,6 +30,6 @@ namespace ModelsDb
         [Column(name: "bonus_count")]
         public int BonusCount { get; set; }
 
-        public ICollection<AccountDb> AccountDbCollection { get; set; }
+        public ICollection<AccountDb> AccountCollection { get; set; } = new List<AccountDb>();
     }
 }

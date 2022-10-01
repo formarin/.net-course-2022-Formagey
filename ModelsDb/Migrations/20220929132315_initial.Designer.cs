@@ -2,16 +2,18 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ModelsDb;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace ModelsDb.Migrations
 {
-    [DbContext(typeof(AppContextDb))]
-    partial class AppContextDbModelSnapshot : ModelSnapshot
+    [DbContext(typeof(ApplicationContextDb))]
+    [Migration("20220929132315_initial")]
+    partial class initial
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -30,9 +32,6 @@ namespace ModelsDb.Migrations
                         .HasColumnType("double precision")
                         .HasColumnName("amount");
 
-                    b.Property<Guid?>("ClientDbId")
-                        .HasColumnType("uuid");
-
                     b.Property<Guid>("ClientId")
                         .HasColumnType("uuid")
                         .HasColumnName("client_id");
@@ -43,7 +42,7 @@ namespace ModelsDb.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ClientDbId");
+                    b.HasIndex("ClientId");
 
                     b.ToTable("account");
                 });
@@ -131,15 +130,17 @@ namespace ModelsDb.Migrations
             modelBuilder.Entity("ModelsDb.AccountDb", b =>
                 {
                     b.HasOne("ModelsDb.ClientDb", "ClientDb")
-                        .WithMany("AccountDbCollection")
-                        .HasForeignKey("ClientDbId");
+                        .WithMany("AccountCollection")
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("ClientDb");
                 });
 
             modelBuilder.Entity("ModelsDb.ClientDb", b =>
                 {
-                    b.Navigation("AccountDbCollection");
+                    b.Navigation("AccountCollection");
                 });
 #pragma warning restore 612, 618
         }

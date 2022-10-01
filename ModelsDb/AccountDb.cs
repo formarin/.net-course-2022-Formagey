@@ -11,16 +11,16 @@ namespace ModelsDb
         [Column(name: "id")]
         public Guid Id { get; set; }
 
-        [Column(name: "currency_name")]
-        public string CurrencyName { get; set; }
-
         [Column(name: "amount")]
         public double Amount { get; set; }
 
-        [ForeignKey("client_id")]
+        [Column(name: "currency_name")]
+        public string CurrencyName { get; set; }
+
         [Column(name: "client_id")]
         public Guid ClientId { get; set; }
 
+        [ForeignKey(nameof(ClientId))]
         public ClientDb ClientDb { get; set; }
     }
 }

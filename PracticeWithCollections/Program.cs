@@ -83,14 +83,13 @@ namespace PracticeWithCollections
             var foundEmployee = employeeList.Where(employee => employee.Salary == minSalary).ToList();
 
 
-            var clientStorage = new ClientStorage();
-            var clientService = new ClientService<IClientStorage>(clientStorage);
+            var clientService = new ClientService();
             clientService.AddClientList(testDataGenerator.GetClientList(1000));
             var allClients = clientService.GetClients(new ClientFilter());
 
-            var youngestClient = allClients.Where(x => x.Key.DateOfBirth == allClients.Max(x => x.Key.DateOfBirth)).FirstOrDefault();
-            var oldestClient = allClients.Where(x => x.Key.DateOfBirth == allClients.Min(x => x.Key.DateOfBirth)).FirstOrDefault();
-            var averageClientsAge = allClients.Keys.Average(x => DateTime.Now.Year - x.DateOfBirth.Year);
+            var youngestClient = allClients.Where(x => x.DateOfBirth == allClients.Max(x => x.DateOfBirth)).FirstOrDefault();
+            var oldestClient = allClients.Where(x => x.DateOfBirth == allClients.Min(x => x.DateOfBirth)).FirstOrDefault();
+            var averageClientsAge = allClients.Average(x => DateTime.Now.Year - x.DateOfBirth.Year);
 
             Console.ReadKey();
         }

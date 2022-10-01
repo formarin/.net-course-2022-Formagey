@@ -48,26 +48,25 @@ namespace ModelsDb.Migrations
                 columns: table => new
                 {
                     id = table.Column<Guid>(type: "uuid", nullable: false),
-                    currency_name = table.Column<string>(type: "text", nullable: true),
                     amount = table.Column<double>(type: "double precision", nullable: false),
-                    client_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    ClientDbId = table.Column<Guid>(type: "uuid", nullable: true)
+                    currency_name = table.Column<string>(type: "text", nullable: true),
+                    client_id = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_account", x => x.id);
                     table.ForeignKey(
-                        name: "FK_account_client_ClientDbId",
-                        column: x => x.ClientDbId,
+                        name: "FK_account_client_client_id",
+                        column: x => x.client_id,
                         principalTable: "client",
                         principalColumn: "id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_account_ClientDbId",
+                name: "IX_account_client_id",
                 table: "account",
-                column: "ClientDbId");
+                column: "client_id");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
