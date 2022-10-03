@@ -1,39 +1,59 @@
-﻿using Models;
+﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
+using Models;
+using ModelsDb;
 using Services.Exceptions;
 using Services.Filters;
-using Services.Storages;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Services
 {
-    public class ClientService<T> where T : IClientStorage
+    public class ClientService
     {
-        public T _clientStorage;
-
-        public ClientService(T clientStorage)
+        private ApplicationContextDb _dbContext;
+        public ClientService()
         {
-            _clientStorage = clientStorage;
+            _dbContext = new ApplicationContextDb();
+        }
+
+        public Client GetClient(Guid clientId)
+        {
+            var clientDb = _dbContext.Clients.AsNoTracking().FirstOrDefault(c => c.Id == clientId);
+            var accountCollection = _dbContext.Accounts.AsNoTracking().Where(x => x.ClientId == clientId).ToList<AccountDb>();
+            foreach (var acc in accountCollection)
+            {
+                clientDb.AccountCollection.Add(acc);
+            }
+            return MapToClient(clientDb);
         }
 
         public void AddClient(Client client)
         {
-            if (DateTime.Now.Year - client.DateOfBirth.Year < 18)
-            {
-                throw new AgeLimitException("Минимально допустимый возраст: 18 лет.");
-            }
             if (client.FirstName == null | client.LastName == null | client.LastName == null |
                 client.PassportNumber == 0 | client.DateOfBirth == new DateTime(0))
             {
                 throw new NoPassportDataException("Наличие всех паспортных данных обязательно.");
             }
+            if (DateTime.Now.Year - client.DateOfBirth.Year < 18)
+            {
+                throw new AgeLimitException("Минимально допустимый возраст: 18 лет.");
+            }
 
-            _clientStorage.Add(client);
+            var accountDb = new AccountDb
+            {
+                Amount = 0,
+                CurrencyName = "USD",
+                ClientId = client.Id
+            };
+
+            _dbContext.Clients.Add(MapToClientDb(client));
+            _dbContext.Accounts.Add(accountDb);
+            _dbContext.SaveChanges();
         }
 
         public void AddClientList(List<Client> clientList)
-
         {
             foreach (var client in clientList)
             {
@@ -43,57 +63,120 @@ namespace Services
 
         public void UpdateClient(Client client)
         {
-            if (_clientStorage.Data.ContainsKey(client))
-                _clientStorage.Update(client);
-            else
-                throw new ArgumentException("В базе данных нет такого клиента");
+            var clientDb = _dbContext.Clients.FirstOrDefault(c => c.Id == client.Id);
+            if (clientDb == null)
+                throw new Exception("Клиента нет в базе");
+
+            _dbContext.Entry(clientDb).State = EntityState.Detached;
+
+            var updatedClientDb = MapToClientDb(client);
+            _dbContext.Clients.Update(updatedClientDb);
+
+            _dbContext.SaveChanges();
         }
 
-        public void DeleteClient(Client client)
+        public void DeleteClient(Guid clientId)
         {
-            _clientStorage.Delete(client);
+            _dbContext.ChangeTracker.Clear();
+
+            var client = GetClient(clientId);
+            if (client == null)
+                throw new Exception("Клиента нет в базе");
+
+            _dbContext.Clients.Remove(MapToClientDb(client));
+            _dbContext.SaveChanges();
         }
 
-        public void AddAccount(Client client, Account account)
+        public void AddAccount(Guid clientId, Account account)
         {
-            _clientStorage.AddAccount(client, account);
+            account.ClientId = clientId;
+            _dbContext.Accounts.Add(MapToAccountDb(account));
+            _dbContext.SaveChanges();
         }
 
-        public void UpdateAccount(Client client, Account account)
+        public void UpdateAccount(Guid clientId, Account account)
         {
-            if (_clientStorage.Data[client].Contains(account))
-                _clientStorage.UpdateAccount(client, account);
-            else
-                throw new ArgumentException("В базе данных нет такого аккаунта");
-        }
-        public void DeleteAccount(Client client, Account account)
-        {
-            _clientStorage.DeleteAccount(client, account);
+            var accountDb = _dbContext.Accounts.FirstOrDefault(c => c.Id == account.Id);
+            if (accountDb == null)
+                throw new Exception("Аккаунта нет в базе");
+
+            _dbContext.Entry(accountDb).State = EntityState.Detached;
+
+            var updatedAccountDb = MapToAccountDb(account);
+            _dbContext.Accounts.Update(updatedAccountDb);
+
+            _dbContext.SaveChanges();
         }
 
-        public Dictionary<Client, List<Account>> GetClients(ClientFilter filter)
+        public void DeleteAccount(Guid accountId)
         {
-            var query = _clientStorage.Data.Where(_ => true);
+            var dbAccount = _dbContext.Accounts.AsTracking().FirstOrDefault(c => c.Id == accountId);
+            if (dbAccount == null)
+                throw new Exception("Аккаунта нет в базе");
+
+            _dbContext.Accounts.Remove(dbAccount);
+            _dbContext.SaveChanges();
+        }
+
+        public List<Client> GetClients(ClientFilter filter)
+        {
+            var query = _dbContext.Clients.AsQueryable();
 
             if (filter.FirstName != null)
-                query = query.Where(x => x.Key.FirstName == filter.FirstName);
+                query = query.Where(x => x.FirstName.Contains(filter.FirstName));
 
             if (filter.LastName != null)
-                query = query.Where(x => x.Key.LastName == filter.LastName);
+                query = query.Where(x => x.LastName.Contains(filter.LastName));
 
             if (filter.PhoneNumber != null)
-                query = query.Where(x => x.Key.PhoneNumber == filter.PhoneNumber);
+                query = query.Where(x => x.PhoneNumber.ToString().Contains(filter.PhoneNumber.ToString()));
 
             if (filter.PassportNumber != null)
-                query = query.Where(x => x.Key.PassportNumber == filter.PassportNumber);
+                query = query.Where(x => x.PassportNumber.ToString().Contains(filter.PassportNumber.ToString()));
 
             if (filter.MinDate != null)
-                query = query.Where(x => x.Key.DateOfBirth >= filter.MinDate);
+                query = query.Where(x => x.DateOfBirth >= filter.MinDate);
 
             if (filter.MaxDate != null)
-                query = query.Where(x => x.Key.DateOfBirth <= filter.MaxDate);
+                query = query.Where(x => x.DateOfBirth <= filter.MaxDate);
 
-            return query.ToDictionary(keySelector: x => x.Key, elementSelector: x => x.Value);
+            if (filter.pageNumber != null & filter.notesCount != null)
+                query = query.Skip(filter.notesCount.Value * (filter.pageNumber.Value - 1)).Take(filter.notesCount.Value);
+
+            List<Client> list = new List<Client>();
+            foreach (var item in query)
+                list.Add(MapToClient(item));
+
+            return list;
+        }
+
+        private Client MapToClient(ClientDb clientDb)
+        {
+            return new Mapper(
+                new MapperConfiguration(cfg =>
+                {
+                    cfg.CreateMap<AccountDb, Account>();
+                    cfg.CreateMap<ClientDb, Client>();
+                })).Map<Client>(clientDb);
+        }
+
+        private ClientDb MapToClientDb(Client client)
+        {
+            return new Mapper(
+                new MapperConfiguration(cfg =>
+                {
+                    cfg.CreateMap<Account, AccountDb>();
+                    cfg.CreateMap<Client, ClientDb>();
+                })).Map<ClientDb>(client);
+        }
+
+        private AccountDb MapToAccountDb(Account account)
+        {
+            return new Mapper(
+                new MapperConfiguration(cfg =>
+                {
+                    cfg.CreateMap<Account, AccountDb>();
+                })).Map<AccountDb>(account);
         }
     }
 }

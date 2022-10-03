@@ -1,7 +1,10 @@
-﻿namespace Models
+﻿using System.Collections.Generic;
+
+namespace Models
 {
     public class Client : Person
     {
+        public ICollection<Account> AccountCollection { get; set; } = new List<Account>();
         public override bool Equals(object obj)
         {
             if (obj == null)
@@ -12,7 +15,13 @@
             {
                 return false;
             }
-            return ((Client)obj).PassportNumber == PassportNumber;
+
+            var client = obj as Client;
+            return client.FirstName == FirstName &
+                client.LastName == LastName &
+                client.PassportNumber == PassportNumber &
+                client.PhoneNumber == PhoneNumber &
+                client.DateOfBirth == DateOfBirth;
         }
         public static bool operator ==(Client client1, Client client2)
         {

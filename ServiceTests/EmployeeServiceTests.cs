@@ -2,7 +2,6 @@
 using Services;
 using Services.Exceptions;
 using Services.Filters;
-using Services.Storages;
 using System;
 using System.Linq;
 using Xunit;
@@ -15,32 +14,36 @@ namespace ServiceTests
         public void AddEmployee_PositiveTest()
         {
             //Arrange
-            var employeeStorage = new EmployeeStorage();
-            var employeeService = new EmployeeService<IEmployeeStorage>(employeeStorage);
+            var employeeService = new EmployeeService();
             var employee = new Employee
             {
+                Id = Guid.NewGuid(),
                 FirstName = "firstName",
                 LastName = "lastName",
                 PhoneNumber = 77700000,
                 PassportNumber = 900000000,
-                DateOfBirth = new DateTime(2000, 1, 1),
-                Salary = 500
+                DateOfBirth = new DateTime(2000, 1, 1)
             };
 
             //Act
             employeeService.AddEmployee(employee);
 
             //Assert
-            Assert.Contains(employee, employeeStorage.Data);
+            Assert.Equal(employee, employeeService.GetEmployee(employee.Id));
         }
 
         [Fact]
         public void AddEmployee_throwsAgeLimitException()
         {
             //Arrange
-            var employeeService = new EmployeeService<IEmployeeStorage>(new EmployeeStorage());
+            var employeeService = new EmployeeService();
             var employee = new Employee
             {
+                Id = Guid.NewGuid(),
+                FirstName = "firstName",
+                LastName = "lastName",
+                PhoneNumber = 77700000,
+                PassportNumber = 900000000,
                 DateOfBirth = new DateTime(2020, 1, 1)
             };
 
@@ -52,7 +55,7 @@ namespace ServiceTests
         public void AddEmployee_throwsNoPassportDataException()
         {
             //Arrange
-            var employeeService = new EmployeeService<IEmployeeStorage>(new EmployeeStorage());
+            var employeeService = new EmployeeService();
             var employee = new Employee
             {
                 DateOfBirth = new DateTime(2000, 1, 1)
@@ -67,19 +70,18 @@ namespace ServiceTests
         {
             //Arrange
             var testDataGenerator = new TestDataGenerator();
-            var employeeStorage = new EmployeeStorage();
-            var employeeService = new EmployeeService<IEmployeeStorage>(employeeStorage);
-            employeeService.AddEmployeeList(testDataGenerator.GetEmployeeList(1000));
+            var employeeService = new EmployeeService();
+            employeeService.AddEmployeeList(testDataGenerator.GetEmployeeList(100));
             var filterByFirstName = new EmployeeFilter()
             {
                 FirstName = "Ирина"
             };
 
             //Act
-            var filtredEmployeeList = employeeService.GetEmployees(filterByFirstName);
+            var filtredEmployees = employeeService.GetEmployees(filterByFirstName);
 
             //Assert
-            Assert.True(filtredEmployeeList.All(x => x.FirstName == "Ирина"));
+            Assert.True(filtredEmployees.All(x => x.FirstName.Contains("Ирина")));
         }
 
         [Fact]
@@ -87,19 +89,18 @@ namespace ServiceTests
         {
             //Arrange
             var testDataGenerator = new TestDataGenerator();
-            var employeeStorage = new EmployeeStorage();
-            var employeeService = new EmployeeService<IEmployeeStorage>(employeeStorage);
-            employeeService.AddEmployeeList(testDataGenerator.GetEmployeeList(1000));
+            var employeeService = new EmployeeService();
+            employeeService.AddEmployeeList(testDataGenerator.GetEmployeeList(100));
             var filterByLastName = new EmployeeFilter()
             {
                 LastName = "Васильев"
             };
 
             //Act
-            var filtredEmployeeList = employeeService.GetEmployees(filterByLastName);
+            var filtredEmployees = employeeService.GetEmployees(filterByLastName);
 
             //Assert
-            Assert.True(filtredEmployeeList.All(x => x.LastName == "Васильев"));
+            Assert.True(filtredEmployees.All(x => x.LastName.Contains("Васильев")));
         }
 
         [Fact]
@@ -107,19 +108,18 @@ namespace ServiceTests
         {
             //Arrange
             var testDataGenerator = new TestDataGenerator();
-            var employeeStorage = new EmployeeStorage();
-            var employeeService = new EmployeeService<IEmployeeStorage>(employeeStorage);
-            employeeService.AddEmployeeList(testDataGenerator.GetEmployeeList(1000));
+            var employeeService = new EmployeeService();
+            employeeService.AddEmployeeList(testDataGenerator.GetEmployeeList(100));
             var filterByPhoneNumber = new EmployeeFilter()
             {
                 PhoneNumber = 77700077
             };
 
             //Act
-            var filtredEmployeeList = employeeService.GetEmployees(filterByPhoneNumber);
+            var filtredEmployees = employeeService.GetEmployees(filterByPhoneNumber);
 
             //Assert
-            Assert.True(filtredEmployeeList.All(x => x.PhoneNumber == 77700077));
+            Assert.True(filtredEmployees.All(x => x.PhoneNumber.ToString().Contains(77700077.ToString())));
         }
 
         [Fact]
@@ -127,19 +127,18 @@ namespace ServiceTests
         {
             //Arrange
             var testDataGenerator = new TestDataGenerator();
-            var employeeStorage = new EmployeeStorage();
-            var employeeService = new EmployeeService<IEmployeeStorage>(employeeStorage);
-            employeeService.AddEmployeeList(testDataGenerator.GetEmployeeList(1000));
+            var employeeService = new EmployeeService();
+            employeeService.AddEmployeeList(testDataGenerator.GetEmployeeList(100));
             var filterByPassportNumber = new EmployeeFilter()
             {
                 PassportNumber = 900000000
             };
 
             //Act
-            var filtredEmployeeList = employeeService.GetEmployees(filterByPassportNumber);
+            var filtredEmployees = employeeService.GetEmployees(filterByPassportNumber);
 
             //Assert
-            Assert.True(filtredEmployeeList.All(x => x.PassportNumber == 900000000));
+            Assert.True(filtredEmployees.All(x => x.PassportNumber.ToString().Contains(900000000.ToString())));
         }
 
         [Fact]
@@ -147,9 +146,8 @@ namespace ServiceTests
         {
             //Arrange
             var testDataGenerator = new TestDataGenerator();
-            var employeeStorage = new EmployeeStorage();
-            var employeeService = new EmployeeService<IEmployeeStorage>(employeeStorage);
-            employeeService.AddEmployeeList(testDataGenerator.GetEmployeeList(1000));
+            var employeeService = new EmployeeService();
+            employeeService.AddEmployeeList(testDataGenerator.GetEmployeeList(100));
             var filterByDateOfBirth = new EmployeeFilter()
             {
                 MinDate = new DateTime(1990, 1, 1),
@@ -157,12 +155,32 @@ namespace ServiceTests
             };
 
             //Act
-            var filtredEmployeeList = employeeService.GetEmployees(filterByDateOfBirth);
+            var filtredEmployees = employeeService.GetEmployees(filterByDateOfBirth);
 
             //Assert
-            Assert.True(filtredEmployeeList.All(x =>
+            Assert.True(filtredEmployees.All(x =>
             x.DateOfBirth >= new DateTime(1990, 1, 1) &&
             x.DateOfBirth <= new DateTime(2000, 1, 1)));
+        }
+
+        [Fact]
+        public void GetEmployees_filteredWithPagination()
+        {
+            //Arrange
+            var testDataGenerator = new TestDataGenerator();
+            var employeeService = new EmployeeService();
+            employeeService.AddEmployeeList(testDataGenerator.GetEmployeeList(100));
+            var filterWithPagination = new EmployeeFilter()
+            {
+                pageNumber = 3,
+                notesCount = 10
+            };
+
+            //Act
+            var filtredEmployees = employeeService.GetEmployees(filterWithPagination);
+
+            //Assert
+            Assert.Equal(10, filtredEmployees.Count);
         }
 
         [Fact]
@@ -170,35 +188,47 @@ namespace ServiceTests
         {
             //Arrange
             var testDataGenerator = new TestDataGenerator();
-            var employeeStorage = new EmployeeStorage();
-            var employeeService = new EmployeeService<IEmployeeStorage>(employeeStorage);
-            employeeService.AddEmployeeList(testDataGenerator.GetEmployeeList(5));
-            var employee = employeeStorage.Data.First();
+            var employeeService = new EmployeeService();
+            var employee = new Employee
+            {
+                Id = Guid.NewGuid(),
+                FirstName = "firstName",
+                LastName = "lastName",
+                PhoneNumber = 77800000,
+                PassportNumber = 800000000,
+                DateOfBirth = new DateTime(2000, 1, 1)
+            };
+            employeeService.AddEmployee(employee);
 
             //Act
-            employeeService.DeleteEmployee(employee);
+            employeeService.DeleteEmployee(employee.Id);
 
             //Asssert
-            Assert.DoesNotContain(employee, employeeStorage.Data);
+            Assert.Null(employeeService.GetEmployee(employee.Id));
         }
 
         [Fact]
         public void Update_PositiveTest()
         {
             //Arrange
-            var testDataGenerator = new TestDataGenerator();
-            var employeeStorage = new EmployeeStorage();
-            var employeeService = new EmployeeService<IEmployeeStorage>(employeeStorage);
-            employeeService.AddEmployeeList(testDataGenerator.GetEmployeeList(5));
-            var employee = employeeStorage.Data.First();
-            var employeePassport = employee.PassportNumber;
+            var employeeService = new EmployeeService();
+            var employee = new Employee
+            {
+                Id = Guid.NewGuid(),
+                FirstName = "firstName",
+                LastName = "lastName",
+                PhoneNumber = 77800000,
+                PassportNumber = 800000002,
+                DateOfBirth = new DateTime(2000, 1, 1)
+            };
+            employeeService.AddEmployee(employee);
+            employee.FirstName = "Саша";
 
             //Act
-            employee.LastName = "lastName2";
             employeeService.UpdateEmployee(employee);
 
             //Assert
-            Assert.Equal("lastName2", employeeStorage.Data.Find(x => x.PassportNumber == employeePassport).LastName);
+            Assert.Equal("Саша", employeeService.GetEmployee(employee.Id).FirstName);
         }
     }
 }

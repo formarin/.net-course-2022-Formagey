@@ -27,7 +27,7 @@ namespace ServiceTests
                 new Account
                 {
                     Amount = 50,
-                    Currency = new Currency { Code = 840, Name = "USD" }
+                    CurrencyName = "USD"
                 }
             });
             var client = new Client

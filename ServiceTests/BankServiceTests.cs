@@ -10,8 +10,8 @@ namespace ServiceTests
         public void AddBonus_PositiveTest()
         {
             //Arrange
-            BankService bankService = new();
-            Employee employee = new();
+            BankService bankService = new BankService();
+            Employee employee = new Employee();
 
             //Act
             bankService.AddBonus(employee);
@@ -24,8 +24,8 @@ namespace ServiceTests
         public void AddToBlackList_PositiveTest()
         {
             //Arrange
-            BankService bankService = new();
-            Employee employee = new();
+            BankService bankService = new BankService();
+            Employee employee = new Employee();
 
             //Act
             bankService.AddToBlackList(employee);
@@ -38,8 +38,8 @@ namespace ServiceTests
         public void IsPersonInBlackList_PositiveTest()
         {
             //Arrange
-            BankService bankService = new();
-            Employee employee = new();
+            BankService bankService = new BankService();
+            Employee employee = new Employee();
             bankService.AddToBlackList(employee);
 
             //Act Assert

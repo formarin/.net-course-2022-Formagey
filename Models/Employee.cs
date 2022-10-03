@@ -15,7 +15,13 @@
             {
                 return false;
             }
-            return ((Employee)obj).PassportNumber == PassportNumber;
+
+            var employee = obj as Employee;
+            return employee.FirstName == FirstName &
+                employee.LastName == LastName &
+                employee.PassportNumber == PassportNumber &
+                employee.PhoneNumber == PhoneNumber &
+                employee.DateOfBirth == DateOfBirth;
         }
         public static bool operator ==(Employee employee1, Employee employee2)
         {
