@@ -50,27 +50,16 @@ namespace Services
 
         public void UpdateEmployee(Employee employee)
         {
-            if (GetEmployee(employee.Id) == null)
+            var employeeDb = _dbContext.Employees/*.AsNoTracking()*/.FirstOrDefault(c => c.Id == employee.Id);
+            if (employeeDb == null)
                 throw new Exception("Сотрудника нет в базе");
 
-            var dbEmployee = _dbContext.Employees.AsTracking().FirstOrDefault(c => c.Id == employee.Id);
-            var mappedEmployee = MapToEmployeeDb(employee);
+            _dbContext.Entry(employeeDb).State = EntityState.Detached;
 
-            MakeShallowCopy(mappedEmployee, ref dbEmployee);
+            var updatedEmployeeDb = MapToEmployeeDb(employee);
+            _dbContext.Employees.Update(updatedEmployeeDb);
+
             _dbContext.SaveChanges();
-        }
-
-        private void MakeShallowCopy(EmployeeDb employeeDb, ref EmployeeDb outEmployeeDb)
-        {
-            var employeeType = employeeDb.GetType();
-
-            foreach (var property in employeeType.GetProperties())
-            {
-                if (property.Name.Contains("Id"))
-                    continue;
-                var svoystvoDb = employeeType.GetProperty(property.Name);
-                svoystvoDb.SetValue(outEmployeeDb, svoystvoDb.GetValue(employeeDb));
-            }
         }
 
         public void DeleteEmployee(Guid employeeId)

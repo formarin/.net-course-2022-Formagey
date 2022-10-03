@@ -311,7 +311,7 @@ namespace ServiceTests
             clientService.AddAccount(client.Id, account);
 
             //Act
-            clientService.DeleteAccount(client.Id, account);
+            clientService.DeleteAccount(account.Id);
 
             //Assert
             Assert.DoesNotContain(account, clientService.GetClient(client.Id).AccountCollection);

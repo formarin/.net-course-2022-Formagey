@@ -63,27 +63,16 @@ namespace Services
 
         public void UpdateClient(Client client)
         {
-            if (GetClient(client.Id) == null)
+            var clientDb = _dbContext.Clients.FirstOrDefault(c => c.Id == client.Id);
+            if (clientDb == null)
                 throw new Exception("Клиента нет в базе");
 
-            var dbClient = _dbContext.Clients.AsTracking().FirstOrDefault(c => c.Id == client.Id);
-            var mappedClient = MapToClientDb(client);
+            _dbContext.Entry(clientDb).State = EntityState.Detached;
 
-            MakeShallowCopy(mappedClient, ref dbClient);
+            var updatedClientDb = MapToClientDb(client);
+            _dbContext.Clients.Update(updatedClientDb);
+
             _dbContext.SaveChanges();
-        }
-
-        private void MakeShallowCopy(ClientDb clientDb, ref ClientDb outClientDb)
-        {
-            var clientType = clientDb.GetType();
-
-            foreach (var property in clientType.GetProperties())
-            {
-                if (property.Name.Contains("Id"))
-                    continue;
-                var propDb = clientType.GetProperty(property.Name);
-                propDb.SetValue(outClientDb, propDb.GetValue(clientDb));
-            }
         }
 
         public void DeleteClient(Guid clientId)
@@ -107,38 +96,25 @@ namespace Services
 
         public void UpdateAccount(Guid clientId, Account account)
         {
-            var dbAccount = _dbContext.Accounts.AsTracking().FirstOrDefault(c => c.ClientId == clientId);
-            if (dbAccount == null)
+            var accountDb = _dbContext.Accounts.FirstOrDefault(c => c.Id == account.Id);
+            if (accountDb == null)
                 throw new Exception("Аккаунта нет в базе");
 
-            var mappedAccount = MapToAccountDb(account);
+            _dbContext.Entry(accountDb).State = EntityState.Detached;
 
-            MakeShallowCopy(mappedAccount, ref dbAccount);
+            var updatedAccountDb = MapToAccountDb(account);
+            _dbContext.Accounts.Update(updatedAccountDb);
+
             _dbContext.SaveChanges();
         }
 
-        private void MakeShallowCopy(AccountDb accountDb, ref AccountDb outAccountDb)
+        public void DeleteAccount(Guid accountId)
         {
-            var accountType = accountDb.GetType();
-
-            foreach (var property in accountType.GetProperties())
-            {
-                if (property.Name.Contains("Id"))
-                    continue;
-                var propDb = accountType.GetProperty(property.Name);
-                propDb.SetValue(outAccountDb, propDb.GetValue(accountDb));
-            }
-        }
-
-        public void DeleteAccount(Guid clientId, Account account)
-        {
-            _dbContext.ChangeTracker.Clear();
-
-            var dbAccount = _dbContext.Accounts.AsTracking().FirstOrDefault(c => c.ClientId == clientId);
+            var dbAccount = _dbContext.Accounts.AsTracking().FirstOrDefault(c => c.Id == accountId);
             if (dbAccount == null)
                 throw new Exception("Аккаунта нет в базе");
 
-            _dbContext.Accounts.Remove(MapToAccountDb(account));
+            _dbContext.Accounts.Remove(dbAccount);
             _dbContext.SaveChanges();
         }
 
@@ -194,22 +170,11 @@ namespace Services
                 })).Map<ClientDb>(client);
         }
 
-        private Account MapToAccount(AccountDb accountDb)
-        {
-            return new Mapper(
-                new MapperConfiguration(cfg =>
-                {
-                    cfg.CreateMap<CurrencyDb, Currency>();
-                    cfg.CreateMap<AccountDb, Account>();
-                })).Map<Account>(accountDb);
-        }
-
         private AccountDb MapToAccountDb(Account account)
         {
             return new Mapper(
                 new MapperConfiguration(cfg =>
                 {
-                    cfg.CreateMap<Currency, CurrencyDb>();
                     cfg.CreateMap<Account, AccountDb>();
                 })).Map<AccountDb>(account);
         }
