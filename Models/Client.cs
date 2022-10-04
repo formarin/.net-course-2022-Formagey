@@ -17,11 +17,12 @@ namespace Models
             }
 
             var client = obj as Client;
-            return client.FirstName == FirstName &
+            return client.Id == Id &
+                client.FirstName == FirstName &
                 client.LastName == LastName &
                 client.PassportNumber == PassportNumber &
                 client.PhoneNumber == PhoneNumber &
-                client.DateOfBirth == DateOfBirth;
+                client.DateOfBirth.Year == DateOfBirth.Year;
         }
         public static bool operator ==(Client client1, Client client2)
         {
@@ -33,7 +34,7 @@ namespace Models
         }
         public override int GetHashCode()
         {
-            return PassportNumber.GetHashCode();
+            return Id.GetHashCode();
         }
     }
 }
