@@ -21,7 +21,7 @@ namespace ServiceTests
             //Act
             exportService.ExportClientListToCsv(list);
 
-            var listFromCSV = exportService.ReadClientFromCsv();
+            var listFromCSV = exportService.ReadClientListFromCsv();
 
             //Assert
             Assert.Equal(listFromCSV, list);

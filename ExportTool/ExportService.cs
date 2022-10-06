@@ -1,6 +1,5 @@
 ﻿using CsvHelper;
 using Models;
-using Services;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -36,7 +35,7 @@ namespace ExportTool
             csvWriter.Flush();
         }
 
-        public List<Client> ReadClientFromCsv()
+        public List<Client> ReadClientListFromCsv()
         {
             var fullPath = Path.Combine(_pathToDirectory, _csvFileName);
 
@@ -45,14 +44,6 @@ namespace ExportTool
             using var csvReader = new CsvReader(streamReader, CultureInfo.CurrentCulture);
 
             return csvReader.GetRecords<Client>().ToList();
-        }
-
-        public void ImportClientsToDatabaseFromCsv()
-        {
-            var list = ReadClientFromCsv();
-
-            var clientService = new ClientService();
-            clientService.AddClientList(list);
         }
     }
 }
