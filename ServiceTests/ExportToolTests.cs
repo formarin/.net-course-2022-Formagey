@@ -13,18 +13,15 @@ namespace ServiceTests
             //Arrange
             var path = Path.Combine(Directory.GetCurrentDirectory(),
                 "..", "..", "..", "..", "ExportTool", "ExportData");
-            var exportService = new ExportService(path, "Clients.csv");
-
-            var testDataGenerator = new TestDataGenerator();
-            var list = testDataGenerator.GetClientList(5);
+            var exportService = new ExportService();
+            var clientList = new TestDataGenerator().GetClientList(5);
 
             //Act
-            exportService.ExportClientListToCsv(list);
-
-            var listFromCSV = exportService.ReadClientListFromCsv();
+            exportService.ExportClientListToCsv(clientList, path, "Clients.csv");
+            var listFromCSV = exportService.ReadClientListFromCsv(path, "Clients.csv");
 
             //Assert
-            Assert.Equal(listFromCSV, list);
+            Assert.Equal(listFromCSV, clientList);
         }
     }
 }

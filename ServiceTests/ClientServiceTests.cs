@@ -327,17 +327,17 @@ namespace ServiceTests
             //Arrange
             var path = Path.Combine(Directory.GetCurrentDirectory(),
                 "..", "..", "..", "..", "ExportTool", "ExportData");
-            var exportService = new ExportService(path, "Clients.csv");
-            var clientService = new ClientService();
             var list = new TestDataGenerator().GetClientList(5);
-            exportService.ExportClientListToCsv(list);
+            var exportService = new ExportService();
+            exportService.ExportClientListToCsv(list, path, "Clients.csv");
+            var clientService = new ClientService();
 
             //Act
-            var listFromCSV = exportService.ReadClientListFromCsv();
+            var listFromCSV = exportService.ReadClientListFromCsv(path, "Clients.csv");
             clientService.AddClientList(listFromCSV);
 
             //Assert
-            NUnit.Framework.Assert.That(listFromCSV, 
+            NUnit.Framework.Assert.That(listFromCSV,
                 Is.SubsetOf(clientService.GetClients(new ClientFilter())));
         }
     }
