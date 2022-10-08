@@ -1,10 +1,14 @@
-﻿using Models;
+﻿using ExportTool;
+using Models;
+using NUnit.Framework;
 using Services;
 using Services.Exceptions;
 using Services.Filters;
 using System;
+using System.IO;
 using System.Linq;
 using Xunit;
+using Assert = Xunit.Assert;
 
 namespace ServiceTests
 {
@@ -315,6 +319,26 @@ namespace ServiceTests
 
             //Assert
             Assert.DoesNotContain(account, clientService.GetClient(client.Id).AccountCollection);
+        }
+
+        [Fact]
+        public void ImportDataFromCsv_PositiveTest()
+        {
+            //Arrange
+            var path = Path.Combine(Directory.GetCurrentDirectory(),
+                "..", "..", "..", "..", "ExportTool", "ExportData");
+            var list = new TestDataGenerator().GetClientList(5);
+            var exportService = new ExportService();
+            exportService.ExportClientListToCsv(list, path, "Clients.csv");
+            var clientService = new ClientService();
+
+            //Act
+            var listFromCSV = exportService.ReadClientListFromCsv(path, "Clients.csv");
+            clientService.AddClientList(listFromCSV);
+
+            //Assert
+            NUnit.Framework.Assert.That(listFromCSV,
+                Is.SubsetOf(clientService.GetClients(new ClientFilter())));
         }
     }
 }
