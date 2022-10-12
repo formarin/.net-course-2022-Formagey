@@ -285,7 +285,7 @@ namespace ServiceTests
             var amount = account.Amount;
 
             //Act
-            clientService.UpdateAccount(client.Id, account);
+            clientService.UpdateAccount(account);
 
             //Assert
             Assert.Contains(account, clientService.GetClient(client.Id).AccountCollection);

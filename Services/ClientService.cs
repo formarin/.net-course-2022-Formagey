@@ -94,7 +94,7 @@ namespace Services
             _dbContext.SaveChanges();
         }
 
-        public void UpdateAccount(Guid clientId, Account account)
+        public void UpdateAccount(Account account)
         {
             var accountDb = _dbContext.Accounts.FirstOrDefault(c => c.Id == account.Id);
             if (accountDb == null)
