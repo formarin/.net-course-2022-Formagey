@@ -19,7 +19,7 @@ namespace ServiceTests
         }
 
         [Fact]
-        public void Test()
+        public void ParallelMoneyEdition_PositiveTest()
         {
             var locker = new object();
             var account = new Account { Amount = 0 };
@@ -48,7 +48,7 @@ namespace ServiceTests
         }
 
         [Fact]
-        public void Test2()
+        public void ParallelImportAndExportData_PositiveTest()
         {
             var exportService = new ExportService();
             var clientService = new ClientService();
