@@ -20,12 +20,19 @@ namespace Services
 
         public Client GetClient(Guid clientId)
         {
-            var clientDb = _dbContext.Clients.AsNoTracking().FirstOrDefault(c => c.Id == clientId);
-            var accountCollection = _dbContext.Accounts.AsNoTracking().Where(x => x.ClientId == clientId).ToList<AccountDb>();
+            var clientDb = _dbContext.Clients.FirstOrDefault(c => c.Id == clientId);
+            var accountCollection = _dbContext.Accounts.Where(x => x.ClientId == clientId).ToList<AccountDb>();
             foreach (var acc in accountCollection)
             {
                 clientDb.AccountCollection.Add(acc);
             }
+
+            _dbContext.Entry(clientDb).State = EntityState.Detached;
+            foreach (var a in accountCollection)
+            {
+                _dbContext.Entry(a).State = EntityState.Detached;
+            }
+
             return MapToClient(clientDb);
         }
 
@@ -107,7 +114,7 @@ namespace Services
 
             _dbContext.SaveChanges();
         }
-
+            
         public void DeleteAccount(Guid accountId)
         {
             var dbAccount = _dbContext.Accounts.AsTracking().FirstOrDefault(c => c.Id == accountId);
@@ -144,8 +151,10 @@ namespace Services
                 query = query.Skip(filter.notesCount.Value * (filter.pageNumber.Value - 1)).Take(filter.notesCount.Value);
 
             List<Client> list = new List<Client>();
-            foreach (var item in query)
-                list.Add(MapToClient(item));
+            foreach (var item in query.ToList())
+            {
+                list.Add(GetClient(item.Id));
+            }
 
             return list;
         }
