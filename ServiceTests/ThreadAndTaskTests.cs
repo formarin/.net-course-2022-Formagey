@@ -2,6 +2,7 @@
 using Models;
 using Services;
 using Services.Filters;
+using System;
 using System.IO;
 using System.Threading;
 using Xunit;
@@ -51,34 +52,42 @@ namespace ServiceTests
         public void ParallelImportAndExportData_PositiveTest()
         {
             var exportService = new ExportService();
-            var clientService = new ClientService();
-            var locker = new object();
+            var clientServiceForImport = new ClientService();
+            var clientServiceForExport = new ClientService();
 
             var path = Path.Combine(Directory.GetCurrentDirectory(),
                 "..", "..", "..", "..", "ExportTool", "ExportData");
 
             void ImportClients()
             {
-                lock (locker)
+                for (var i = 0; i < 10; i++)
                 {
                     var clientList = exportService.ReadClientListFromCsv(path, "Clients.csv");
-                    clientService.AddClientList(clientList);
+                    
+                    for (var j = 0; j < clientList.Count; j++)
+                        clientList[j].Id = Guid.NewGuid();
+                    
+                    clientServiceForImport.AddClientList(clientList);
+
+                    Thread.Sleep(100);
                 }
             };
 
             void ExportClients()
             {
-                lock (locker)
+                for (var i = 0; i < 10; i++)
                 {
-                    var clientList = clientService.GetClients(new ClientFilter { pageNumber = 1, notesCount = 5 });
+                    var clientList = clientServiceForExport.GetClients(new ClientFilter { pageNumber = 1, notesCount = 5 });
                     exportService.ExportClientListToCsv(clientList, path, "ClientsToExport.csv");
+                    
+                    Thread.Sleep(100);
                 }
             };
 
             var exportClients = new Thread(ExportClients) { Name = "exporting thread" };
-            exportClients.Start();
-
             var importClients = new Thread(ImportClients) { Name = "importing thread" };
+
+            exportClients.Start();
             importClients.Start();
 
             Thread.Sleep(10000);
