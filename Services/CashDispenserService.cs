@@ -17,9 +17,9 @@ namespace Services
 
                 var clientService = new ClientService();
 
-                Task.Delay(7000);
-
                 clientService.UpdateAccount(account);
+
+                Task.Delay(7000);
             });
         }
     }
