@@ -4,12 +4,13 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace ExportTool
 {
     public class ExportService
     {
-        public void ExportClientListToCsv(IEnumerable<Client> clientList, string pathToDirectory, string csvFileName)
+        public async Task ExportClientListToCsvAsync(IEnumerable<Client> clientList, string pathToDirectory, string csvFileName)
         {
             var dirInfo = new DirectoryInfo(pathToDirectory);
 
@@ -18,19 +19,19 @@ namespace ExportTool
 
             var fullPath = Path.Combine(pathToDirectory, csvFileName);
 
-            using var fileStream = new FileStream(fullPath, FileMode.Create);
-            using var streamWriter = new StreamWriter(fileStream, System.Text.Encoding.UTF8);
-            using var csvWriter = new CsvWriter(streamWriter, CultureInfo.CurrentCulture);
+            await using var fileStream = new FileStream(fullPath, FileMode.Create);
+            await using var streamWriter = new StreamWriter(fileStream, System.Text.Encoding.UTF8);
+            await using var csvWriter = new CsvWriter(streamWriter, CultureInfo.CurrentCulture);
 
-            csvWriter.WriteRecords(clientList);
-            csvWriter.Flush();
+            await csvWriter.WriteRecordsAsync(clientList);
+            await csvWriter.FlushAsync();
         }
 
-        public List<Client> ReadClientListFromCsv(string pathToDirectory, string csvFileName)
+        public async Task<List<Client>> ReadClientListFromCsvAsync(string pathToDirectory, string csvFileName)
         {
             var fullPath = Path.Combine(pathToDirectory, csvFileName);
 
-            using var fileStream = new FileStream(fullPath, FileMode.OpenOrCreate);
+            await using var fileStream = new FileStream(fullPath, FileMode.OpenOrCreate);
             using var streamReader = new StreamReader(fileStream, System.Text.Encoding.UTF8);
             using var csvReader = new CsvReader(streamReader, CultureInfo.CurrentCulture);
 

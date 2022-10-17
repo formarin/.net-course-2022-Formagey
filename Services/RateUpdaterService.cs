@@ -10,10 +10,10 @@ namespace Services
     {
         public Task RateUpdater(CancellationToken token)
         {
-            return new Task(() =>
+            Task.Run(async () =>
             {
                 var clientService = new ClientService();
-                var clients = clientService.GetClients(new Filters.ClientFilter());
+                var clients = await clientService.GetClientsAsync(new Filters.ClientFilter());
 
                 var accounts = new List<Account>();
                 foreach (var client in clients)
@@ -26,11 +26,12 @@ namespace Services
                     for (var i = 0; i < accounts.Count; i++)
                     {
                         accounts[i].Amount += 10;
-                        clientService.UpdateAccount(accounts[i]);
+                        await clientService.UpdateAccountAsync(accounts[i]);
                     }
-                    Task.Delay(3000).Wait();
+                    await Task.Delay(3000);
                 }
-            });
+            }, token);
+            return Task.CompletedTask;
         }
     }
 }

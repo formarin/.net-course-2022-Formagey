@@ -54,43 +54,42 @@ namespace ServiceTests
         public void ParallelImportAndExportData_PositiveTest()
         {
             var exportService = new ExportService();
-            var clientService = new ClientService();
+            var clientService1 = new ClientService();
+            var clientService2 = new ClientService();
             var locker = new object();
 
             var path = Path.Combine(Directory.GetCurrentDirectory(),
                 "..", "..", "..", "..", "ExportTool", "ExportData");
 
-            void ImportClients()
+            async Task ImportClientsAsync()
             {
-                lock (locker)
-                {
-                    var clientList = exportService.ReadClientListFromCsv(path, "Clients.csv");
-                    clientService.AddClientList(clientList);
-                }
+                var clientList = await exportService.ReadClientListFromCsvAsync(path, "Clients.csv");
+                await clientService1.AddClientListAsync(clientList);
             };
 
-            void ExportClients()
+            async Task ExportClientsAsync()
             {
-                lock (locker)
+                var clientList = await clientService2.GetClientsAsync(new ClientFilter
                 {
-                    var clientList = clientService.GetClients(new ClientFilter { pageNumber = 1, notesCount = 5 });
-                    exportService.ExportClientListToCsv(clientList, path, "ClientsToExport.csv");
-                }
+                    pageNumber = 1,
+                    notesCount = 5
+                });
+                await exportService.ExportClientListToCsvAsync(clientList, path, "ClientsToExport.csv");
             };
 
-            var exportClients = new Thread(ExportClients) { Name = "exporting thread" };
+            var exportClients = new Thread(async () => await ExportClientsAsync()) { Name = "exporting thread" };
             exportClients.Start();
 
-            var importClients = new Thread(ImportClients) { Name = "importing thread" };
+            var importClients = new Thread(async () => await ImportClientsAsync()) { Name = "importing thread" };
             importClients.Start();
 
             Thread.Sleep(10000);
         }
 
         [Fact]
-        public void BackgroundRateUpdater_PositiveTest()
+        public async Task BackgroundRateUpdater_PositiveTestAsync()
         {
-            new ClientService().AddClientList(new TestDataGenerator().GetClientList(10));
+            await new ClientService().AddClientListAsync(new TestDataGenerator().GetClientList(10));
 
             var cancelTokenSource = new CancellationTokenSource();
             var token = cancelTokenSource.Token;
@@ -98,26 +97,25 @@ namespace ServiceTests
             var rateUpdaterService = new RateUpdaterService();
             var task = rateUpdaterService.RateUpdater(token);
 
-            task.Start();
-            task.Wait(30000);
+            task.Wait(5000);
 
             cancelTokenSource.Cancel();
         }
 
         [Fact]
-        public void ParallelCashOUt_PositiveTest()
+        public async Task ParallelCashOUt_PositiveTestAsync()
         {
             var clientService = new ClientService();
             var clientList = new TestDataGenerator().GetClientList(1000);
             var accountList = new List<Account>();
 
-            clientService.AddClientList(clientList);
+            await clientService.AddClientListAsync(clientList);
             for (var i = 0; i < clientList.Count; i++)
             {
-                var account = clientService.GetClient(clientList[i].Id)
-                    .AccountCollection.FirstOrDefault(x => x.CurrencyName == "USD");
+                var client = await clientService.GetClientAsync(clientList[i].Id);
+                var account = client.AccountCollection.FirstOrDefault(x => x.CurrencyName == "USD");
                 account.Amount += 1000;
-                clientService.UpdateAccount(account);
+                await clientService.UpdateAccountAsync(account);
                 accountList.Add(account);
             }
 
@@ -127,10 +125,42 @@ namespace ServiceTests
             for (var i = 0; i < tasks.Length; i++)
                 tasks[i] = cashDispenserService.CashOut(100, accountList[i]);
 
-            foreach (var t in tasks)
-                t.Start();
-
             Task.WaitAll(tasks);
+        }
+
+        [Fact]
+        public async Task Threadpool_TestAsync()
+        {
+            ThreadPool.SetMaxThreads(10, 10);
+            ThreadPool.GetAvailableThreads(out var workerThreads, out var completionPortThreads);
+
+            _outPut.WriteLine(workerThreads.ToString());
+            _outPut.WriteLine(completionPortThreads.ToString());
+
+            var clientService = new ClientService();
+            var tasks = new Task[500];
+
+            for (var i = 0; i < workerThreads; i++)
+            {
+                var task = clientService.GetClientsAsync(new ClientFilter
+                {
+                    pageNumber = 1,
+                    notesCount = 10
+                });
+                _outPut.WriteLine($"   {i} я задача началась");
+                tasks[i] = task;
+                ThreadPool.GetAvailableThreads(out var workerThreadsN, out var completionPortThreadsN);
+                _outPut.WriteLine(workerThreadsN.ToString());
+            }
+
+            await Task.Run(async () =>
+            {
+                var сlientService2 = new ClientService();
+                var clientList = new TestDataGenerator().GetClientList(1);
+                await сlientService2.AddClientAsync(clientList[0]);
+            });
+
+            Task.WaitAll();
         }
     }
 }

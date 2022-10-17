@@ -1,16 +1,16 @@
 ﻿using Models;
 using Services;
 using Services.Filters;
-using Services.Storages;
 using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace PracticeWithCollections
 {
     class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             var testDataGenerator = new TestDataGenerator();
             var employeeList = testDataGenerator.GetEmployeeList(1000);
@@ -82,10 +82,9 @@ namespace PracticeWithCollections
             var minSalary = employeeList.Min(employee => employee.Salary);
             var foundEmployee = employeeList.Where(employee => employee.Salary == minSalary).ToList();
 
-
             var clientService = new ClientService();
-            clientService.AddClientList(testDataGenerator.GetClientList(1000));
-            var allClients = clientService.GetClients(new ClientFilter());
+            await clientService.AddClientListAsync(testDataGenerator.GetClientList(1000));
+            var allClients = await clientService.GetClientsAsync(new ClientFilter());
 
             var youngestClient = allClients.Where(x => x.DateOfBirth == allClients.Max(x => x.DateOfBirth)).FirstOrDefault();
             var oldestClient = allClients.Where(x => x.DateOfBirth == allClients.Min(x => x.DateOfBirth)).FirstOrDefault();

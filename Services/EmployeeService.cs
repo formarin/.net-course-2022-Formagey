@@ -7,6 +7,7 @@ using Services.Filters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Services
 {
@@ -18,13 +19,17 @@ namespace Services
             _dbContext = new ApplicationContextDb();
         }
 
-        public Employee GetEmployee(Guid employeeId)
+        public async Task<Employee> GetEmployeeAsync(Guid employeeId)
         {
-            var employeeDb = _dbContext.Employees.AsNoTracking().FirstOrDefault(c => c.Id == employeeId);
+            var employeeDb = await _dbContext.Employees.FirstOrDefaultAsync(c => c.Id == employeeId);
+
+            if (employeeDb == null)
+                return null;
+
             return MapToEmployee(employeeDb);
         }
 
-        public void AddEmployee(Employee employee)
+        public async Task AddEmployeeAsync(Employee employee)
         {
             if (employee.FirstName == null | employee.LastName == null | employee.LastName == null |
                 employee.PassportNumber == 0 | employee.DateOfBirth == new DateTime(0))
@@ -36,21 +41,21 @@ namespace Services
                 throw new AgeLimitException("Минимально допустимый возраст: 18 лет.");
             }
 
-            _dbContext.Employees.Add(MapToEmployeeDb(employee));
-            _dbContext.SaveChanges();
+            await _dbContext.Employees.AddAsync(MapToEmployeeDb(employee));
+            await _dbContext.SaveChangesAsync();
         }
 
-        public void AddEmployeeList(List<Employee> employeeList)
+        public async Task AddEmployeeListAsync(List<Employee> employeeList)
         {
             foreach (var employee in employeeList)
             {
-                AddEmployee(employee);
+                await AddEmployeeAsync(employee);
             }
         }
 
-        public void UpdateEmployee(Employee employee)
+        public async Task UpdateEmployeeAsync(Employee employee)
         {
-            var employeeDb = _dbContext.Employees/*.AsNoTracking()*/.FirstOrDefault(c => c.Id == employee.Id);
+            var employeeDb = await _dbContext.Employees.FirstOrDefaultAsync(c => c.Id == employee.Id);
             if (employeeDb == null)
                 throw new Exception("Сотрудника нет в базе");
 
@@ -59,22 +64,22 @@ namespace Services
             var updatedEmployeeDb = MapToEmployeeDb(employee);
             _dbContext.Employees.Update(updatedEmployeeDb);
 
-            _dbContext.SaveChanges();
+            await _dbContext.SaveChangesAsync();
         }
 
-        public void DeleteEmployee(Guid employeeId)
+        public async Task DeleteEmployeeAsync(Guid employeeId)
         {
-            _dbContext.ChangeTracker.Clear();
-
-            var employee = GetEmployee(employeeId);
+            var employee = await _dbContext.Employees.FirstOrDefaultAsync(c => c.Id == employeeId);
             if (employee == null)
                 throw new Exception("Сотрудника нет в базе");
 
-            _dbContext.Employees.Remove(MapToEmployeeDb(employee));
-            _dbContext.SaveChanges();
+            _dbContext.Entry(employee).State = EntityState.Detached;
+
+            _dbContext.Employees.Remove(employee);
+            await _dbContext.SaveChangesAsync();
         }
 
-        public List<Employee> GetEmployees(EmployeeFilter filter)
+        public async Task<List<Employee>> GetEmployeesAsync(EmployeeFilter filter)
         {
             var query = _dbContext.Employees.Where(_ => true);
 
@@ -99,11 +104,12 @@ namespace Services
             if (filter.pageNumber != null & filter.notesCount != null)
                 query = query.Skip(filter.notesCount.Value * (filter.pageNumber.Value - 1)).Take(filter.notesCount.Value);
 
-            List<Employee> list = new List<Employee>();
-            foreach (var item in query)
-                list.Add(MapToEmployee(item));
+            var employeeList = new List<Employee>();
+            List<EmployeeDb> employeeDbList = await query.ToListAsync();
+            foreach (var item in employeeDbList)
+                employeeList.Add(MapToEmployee(item));
 
-            return list;
+            return employeeList;
         }
 
         private Employee MapToEmployee(EmployeeDb employeeDb)

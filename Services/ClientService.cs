@@ -7,6 +7,7 @@ using Services.Filters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Services
 {
@@ -18,25 +19,25 @@ namespace Services
             _dbContext = new ApplicationContextDb();
         }
 
-        public Client GetClient(Guid clientId)
+        public async Task<Client> GetClientAsync(Guid clientId)
         {
-            var clientDb = _dbContext.Clients.FirstOrDefault(c => c.Id == clientId);
-            var accountCollection = _dbContext.Accounts.Where(x => x.ClientId == clientId).ToList<AccountDb>();
-            foreach (var acc in accountCollection)
-            {
-                clientDb.AccountCollection.Add(acc);
-            }
+            var clientDb = await _dbContext.Clients.FirstOrDefaultAsync(c => c.Id == clientId);
+            
+            if (clientDb == null)
+                return null;
+
+            clientDb.AccountCollection = await _dbContext.Accounts.Where(x => x.ClientId == clientId).ToListAsync<AccountDb>();
 
             _dbContext.Entry(clientDb).State = EntityState.Detached;
-            foreach (var a in accountCollection)
+            foreach (var account in clientDb.AccountCollection)
             {
-                _dbContext.Entry(a).State = EntityState.Detached;
+                _dbContext.Entry(account).State = EntityState.Detached;
             }
 
             return MapToClient(clientDb);
         }
 
-        public void AddClient(Client client)
+        public async Task AddClientAsync(Client client)
         {
             if (client.FirstName == null | client.LastName == null | client.LastName == null |
                 client.PassportNumber == 0 | client.DateOfBirth == new DateTime(0))
@@ -55,22 +56,22 @@ namespace Services
                 ClientId = client.Id
             };
 
-            _dbContext.Clients.Add(MapToClientDb(client));
-            _dbContext.Accounts.Add(accountDb);
-            _dbContext.SaveChanges();
+            await _dbContext.Clients.AddAsync(MapToClientDb(client));
+            await _dbContext.Accounts.AddAsync(accountDb);
+            await _dbContext.SaveChangesAsync();
         }
 
-        public void AddClientList(List<Client> clientList)
+        public async Task AddClientListAsync(List<Client> clientList)
         {
             foreach (var client in clientList)
             {
-                AddClient(client);
+                await AddClientAsync(client);
             }
         }
 
-        public void UpdateClient(Client client)
+        public async Task UpdateClientAsync(Client client)
         {
-            var clientDb = _dbContext.Clients.FirstOrDefault(c => c.Id == client.Id);
+            var clientDb = await _dbContext.Clients.FirstOrDefaultAsync(c => c.Id == client.Id);
             if (clientDb == null)
                 throw new Exception("Клиента нет в базе");
 
@@ -79,31 +80,30 @@ namespace Services
             var updatedClientDb = MapToClientDb(client);
             _dbContext.Clients.Update(updatedClientDb);
 
-            _dbContext.SaveChanges();
+            await _dbContext.SaveChangesAsync();
         }
 
-        public void DeleteClient(Guid clientId)
+        public async Task DeleteClientAsync(Guid clientId)
         {
-            _dbContext.ChangeTracker.Clear();
-
-            var client = GetClient(clientId);
+            var client = await _dbContext.Clients.FirstOrDefaultAsync(c => c.Id == clientId);
             if (client == null)
                 throw new Exception("Клиента нет в базе");
 
-            _dbContext.Clients.Remove(MapToClientDb(client));
-            _dbContext.SaveChanges();
+            _dbContext.Entry(client).State = EntityState.Detached;
+
+            _dbContext.Clients.Remove(client);
+            await _dbContext.SaveChangesAsync();
         }
 
-        public void AddAccount(Guid clientId, Account account)
+        public async Task AddAccountAsync(Account account)
         {
-            account.ClientId = clientId;
-            _dbContext.Accounts.Add(MapToAccountDb(account));
-            _dbContext.SaveChanges();
+            await _dbContext.Accounts.AddAsync(MapToAccountDb(account));
+            await _dbContext.SaveChangesAsync();
         }
 
-        public void UpdateAccount(Account account)
+        public async Task UpdateAccountAsync(Account account)
         {
-            var accountDb = _dbContext.Accounts.FirstOrDefault(c => c.Id == account.Id);
+            var accountDb = await _dbContext.Accounts.FirstOrDefaultAsync(c => c.Id == account.Id);
             if (accountDb == null)
                 throw new Exception("Аккаунта нет в базе");
 
@@ -112,20 +112,20 @@ namespace Services
             var updatedAccountDb = MapToAccountDb(account);
             _dbContext.Accounts.Update(updatedAccountDb);
 
-            _dbContext.SaveChanges();
+            await _dbContext.SaveChangesAsync();
         }
-            
-        public void DeleteAccount(Guid accountId)
+
+        public async Task DeleteAccountAsync(Guid accountId)
         {
-            var dbAccount = _dbContext.Accounts.AsTracking().FirstOrDefault(c => c.Id == accountId);
+            var dbAccount = await _dbContext.Accounts.AsTracking().FirstOrDefaultAsync(c => c.Id == accountId);
             if (dbAccount == null)
                 throw new Exception("Аккаунта нет в базе");
 
             _dbContext.Accounts.Remove(dbAccount);
-            _dbContext.SaveChanges();
+            await _dbContext.SaveChangesAsync(); ;
         }
 
-        public List<Client> GetClients(ClientFilter filter)
+        public async Task<List<Client>> GetClientsAsync(ClientFilter filter)
         {
             var query = _dbContext.Clients.AsQueryable();
 
@@ -150,13 +150,14 @@ namespace Services
             if (filter.pageNumber != null & filter.notesCount != null)
                 query = query.Skip(filter.notesCount.Value * (filter.pageNumber.Value - 1)).Take(filter.notesCount.Value);
 
-            List<Client> list = new List<Client>();
-            foreach (var item in query.ToList())
+            var clientList = new List<Client>();
+            var clientDbList = await query.ToListAsync();
+            foreach (var item in clientDbList)
             {
-                list.Add(GetClient(item.Id));
+                clientList.Add(await GetClientAsync(item.Id));
             }
 
-            return list;
+            return clientList;
         }
 
         private Client MapToClient(ClientDb clientDb)

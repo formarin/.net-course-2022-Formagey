@@ -1,6 +1,7 @@
 ﻿using ExportTool;
 using Services;
 using System.IO;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace ServiceTests
@@ -8,7 +9,7 @@ namespace ServiceTests
     public class ExportToolTests
     {
         [Fact]
-        public void ExportData_PositiveTest()
+        public async Task ExportData_PositiveTestAsync()
         {
             //Arrange
             var path = Path.Combine(Directory.GetCurrentDirectory(),
@@ -17,8 +18,8 @@ namespace ServiceTests
             var clientList = new TestDataGenerator().GetClientList(5);
 
             //Act
-            exportService.ExportClientListToCsv(clientList, path, "Clients.csv");
-            var listFromCSV = exportService.ReadClientListFromCsv(path, "Clients.csv");
+            await exportService.ExportClientListToCsvAsync(clientList, path, "Clients.csv");
+            var listFromCSV = await exportService.ReadClientListFromCsvAsync(path, "Clients.csv");
 
             //Assert
             Assert.Equal(listFromCSV, clientList);
