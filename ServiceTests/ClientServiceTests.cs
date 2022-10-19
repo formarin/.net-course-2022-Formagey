@@ -7,6 +7,7 @@ using Services.Filters;
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Xunit;
 using Assert = Xunit.Assert;
 
@@ -15,7 +16,7 @@ namespace ServiceTests
     public class ClientServiceTests
     {
         [Fact]
-        public void AddClient_PositiveTest()
+        public async Task AddClientAsync_PositiveTestAsync()
         {
             //Arrange
             var clientService = new ClientService();
@@ -30,14 +31,14 @@ namespace ServiceTests
             };
 
             //Act
-            clientService.AddClient(client);
+            await clientService.AddClientAsync(client);
 
             //Assert
-            Assert.Equal(client, clientService.GetClient(client.Id));
+            Assert.Equal(client, await clientService.GetClientAsync(client.Id));
         }
 
         [Fact]
-        public void AddClient_throwsAgeLimitException()
+        public async Task AddClientAsync_throwsAgeLimitException()
         {
             //Arrange
             var clientService = new ClientService();
@@ -52,11 +53,11 @@ namespace ServiceTests
             };
 
             //Act Assert
-            Assert.Throws<AgeLimitException>(() => clientService.AddClient(client));
+            await Assert.ThrowsAsync<AgeLimitException>(async () => await clientService.AddClientAsync(client));
         }
 
         [Fact]
-        public void AddClient_throwsNoPassportDataException()
+        public async Task AddClientAsync_throwsNoPassportDataException()
         {
             //Arrange
             var clientService = new ClientService();
@@ -67,92 +68,92 @@ namespace ServiceTests
             };
 
             //Act Assert
-            Assert.Throws<NoPassportDataException>(() => clientService.AddClient(client));
+            await Assert.ThrowsAsync<NoPassportDataException>(async () => await clientService.AddClientAsync(client));
         }
 
         [Fact]
-        public void GetClients_filteredByFirstName()
+        public async Task GetClients_filteredByFirstNameAsync()
         {
             //Arrange
             var testDataGenerator = new TestDataGenerator();
             var clientService = new ClientService();
-            clientService.AddClientList(testDataGenerator.GetClientList(100));
+            await clientService.AddClientListAsync(testDataGenerator.GetClientList(100));
             var filterByFirstName = new ClientFilter()
             {
                 FirstName = "Ирина"
             };
 
             //Act
-            var filtredClients = clientService.GetClients(filterByFirstName);
+            var filtredClients = await clientService.GetClientsAsync(filterByFirstName);
 
             //Assert
             Assert.True(filtredClients.All(x => x.FirstName.Contains("Ирина")));
         }
 
         [Fact]
-        public void GetClients_filteredByLastName()
+        public async Task GetClients_filteredByLastNameAsync()
         {
             //Arrange
             var testDataGenerator = new TestDataGenerator();
             var clientService = new ClientService();
-            clientService.AddClientList(testDataGenerator.GetClientList(100));
+            await clientService.AddClientListAsync(testDataGenerator.GetClientList(100));
             var filterByLastName = new ClientFilter()
             {
                 LastName = "Васильев"
             };
 
             //Act
-            var filtredClients = clientService.GetClients(filterByLastName);
+            var filtredClients = await clientService.GetClientsAsync(filterByLastName);
 
             //Assert
             Assert.True(filtredClients.All(x => x.LastName.Contains("Васильев")));
         }
 
         [Fact]
-        public void GetClients_filteredByPhoneNumber()
+        public async Task GetClients_filteredByPhoneNumberAsync()
         {
             //Arrange
             var testDataGenerator = new TestDataGenerator();
             var clientService = new ClientService();
-            clientService.AddClientList(testDataGenerator.GetClientList(100));
+            await clientService.AddClientListAsync(testDataGenerator.GetClientList(100));
             var filterByPhoneNumber = new ClientFilter()
             {
                 PhoneNumber = 77700077
             };
 
             //Act
-            var filtredClients = clientService.GetClients(filterByPhoneNumber);
+            var filtredClients = await clientService.GetClientsAsync(filterByPhoneNumber);
 
             //Assert
             Assert.True(filtredClients.All(x => x.PhoneNumber.ToString().Contains(77700077.ToString())));
         }
 
         [Fact]
-        public void GetClients_filteredByPassportNumber()
+        public async Task GetClients_filteredByPassportNumberAsync()
         {
             //Arrange
             var testDataGenerator = new TestDataGenerator();
             var clientService = new ClientService();
-            clientService.AddClientList(testDataGenerator.GetClientList(100));
+            await clientService.AddClientListAsync(testDataGenerator.GetClientList(100));
             var filterByPassportNumber = new ClientFilter()
             {
                 PassportNumber = 900000000
             };
 
             //Act
-            var filtredClients = clientService.GetClients(filterByPassportNumber);
+            var filtredClients = await clientService.GetClientsAsync(filterByPassportNumber);
 
             //Assert
             Assert.True(filtredClients.All(x => x.PassportNumber.ToString().Contains(900000000.ToString())));
         }
 
         [Fact]
-        public void GetClients_filteredByDateOfBirth()
+        public async Task GetClients_filteredByDateOfBirthAsync()
         {
             //Arrange
             var testDataGenerator = new TestDataGenerator();
             var clientService = new ClientService();
-            clientService.AddClientList(testDataGenerator.GetClientList(100));
+            await clientService.AddClientListAsync(testDataGenerator.GetClientList(100));
             var filterByDateOfBirth = new ClientFilter()
             {
                 MinDate = new DateTime(1990, 1, 1),
@@ -160,7 +161,7 @@ namespace ServiceTests
             };
 
             //Act
-            var filtredClients = clientService.GetClients(filterByDateOfBirth);
+            var filtredClients = await clientService.GetClientsAsync(filterByDateOfBirth);
 
             //Assert
             Assert.True(filtredClients.All(x =>
@@ -169,12 +170,12 @@ namespace ServiceTests
         }
 
         [Fact]
-        public void GetClients_filteredWithPagination()
+        public async Task GetClients_filteredWithPaginationAsync()
         {
             //Arrange
             var testDataGenerator = new TestDataGenerator();
             var clientService = new ClientService();
-            clientService.AddClientList(testDataGenerator.GetClientList(100));
+            await clientService.AddClientListAsync(testDataGenerator.GetClientList(100));
             var filterWithPagination = new ClientFilter()
             {
                 pageNumber = 3,
@@ -182,17 +183,16 @@ namespace ServiceTests
             };
 
             //Act
-            var filtredClients = clientService.GetClients(filterWithPagination);
+            var filtredClients = await clientService.GetClientsAsync(filterWithPagination);
 
             //Assert
             Assert.Equal(10, filtredClients.Count);
         }
 
         [Fact]
-        public void Delete_PositiveTest()
+        public async Task Delete_PositiveTestAsync()
         {
             //Arrange
-            var testDataGenerator = new TestDataGenerator();
             var clientService = new ClientService();
             var client = new Client
             {
@@ -203,17 +203,17 @@ namespace ServiceTests
                 PassportNumber = 800000000,
                 DateOfBirth = new DateTime(2000, 1, 1)
             };
-            clientService.AddClient(client);
+            await clientService.AddClientAsync(client);
 
             //Act
-            clientService.DeleteClient(client.Id);
+            await clientService.DeleteClientAsync(client.Id);
 
             //Asssert
-            Assert.Null(clientService.GetClient(client.Id));
+            Assert.Null(await clientService.GetClientAsync(client.Id));
         }
 
         [Fact]
-        public void Update_PositiveTest()
+        public async Task Update_PositiveTestAsync()
         {
             //Arrange
             var clientService = new ClientService();
@@ -226,41 +226,58 @@ namespace ServiceTests
                 PassportNumber = 800000002,
                 DateOfBirth = new DateTime(2000, 1, 1)
             };
-            clientService.AddClient(client);
+            await clientService.AddClientAsync(client);
             client.FirstName = "Саша";
 
             //Act
-            clientService.UpdateClient(client);
+            await clientService.UpdateClientAsync(client);
 
             //Assert
-            Assert.Equal("Саша", clientService.GetClient(client.Id).FirstName);
+            var foundClient = await clientService.GetClientAsync(client.Id);
+            Assert.Equal("Саша", foundClient.FirstName);
         }
 
         [Fact]
-        public void AddAccount_PositiveTest()
+        public async Task AddAccount_PositiveTestAsync()
         {
             //Arrange
             var clientService = new ClientService();
-            var client = clientService.GetClients(new ClientFilter
+            
+            var client = new Client
+            {
+                Id = Guid.NewGuid(),
+                FirstName = "firstName",
+                LastName = "lastName",
+                PhoneNumber = 77700000,
+                PassportNumber = 900000000,
+                DateOfBirth = new DateTime(2000, 1, 1)
+            };
+            await clientService.AddClientAsync(client);
+
+            var clientList = await clientService.GetClientsAsync(new ClientFilter
             {
                 PassportNumber = 900000000
-            }).FirstOrDefault();
+            });
+            client = clientList.FirstOrDefault();
             var account = new Account
             {
                 Id = Guid.NewGuid(),
                 Amount = 0,
-                CurrencyName = "RUP"
+                CurrencyName = "RUP",
+                ClientId = client.Id
+
             };
 
             //Act
-            clientService.AddAccount(client.Id, account);
+            await clientService.AddAccountAsync(account);
 
             //Assert
-            Assert.Contains(account, clientService.GetClient(client.Id).AccountCollection);
+            var foundClient = await clientService.GetClientAsync(client.Id);
+            Assert.Contains(account, foundClient.AccountCollection);
         }
 
         [Fact]
-        public void UpdateAccount_PositiveTest()
+        public async Task UpdateAccount_PositiveTestAsync()
         {
             //Arrange
             var clientService = new ClientService();
@@ -273,26 +290,27 @@ namespace ServiceTests
                 PassportNumber = 700000000,
                 DateOfBirth = new DateTime(2000, 1, 1)
             };
-            clientService.AddClient(client);
+            await clientService.AddClientAsync(client);
             var account = new Account
             {
                 Id = Guid.NewGuid(),
                 Amount = 0,
-                CurrencyName = "RUP"
+                CurrencyName = "RUP",
+                ClientId = client.Id
             };
-            clientService.AddAccount(client.Id, account);
+            await clientService.AddAccountAsync(account);
             account.Amount += 100;
-            var amount = account.Amount;
 
             //Act
-            clientService.UpdateAccount(account);
+            await clientService.UpdateAccountAsync(account);
 
             //Assert
-            Assert.Contains(account, clientService.GetClient(client.Id).AccountCollection);
+            var foundClient = await clientService.GetClientAsync(client.Id);
+            Assert.Contains(account, foundClient.AccountCollection);
         }
 
         [Fact]
-        public void DeleteAccount_PositiveTest()
+        public async Task DeleteAccount_PositiveTestAsync()
         {
             //Arrange
             var clientService = new ClientService();
@@ -305,40 +323,42 @@ namespace ServiceTests
                 PassportNumber = 700000000,
                 DateOfBirth = new DateTime(2000, 1, 1)
             };
-            clientService.AddClient(client);
+            await clientService.AddClientAsync(client);
             var account = new Account
             {
                 Id = Guid.NewGuid(),
                 Amount = 0,
-                CurrencyName = "RUP"
+                CurrencyName = "RUP",
+                ClientId = client.Id
             };
-            clientService.AddAccount(client.Id, account);
+            await clientService.AddAccountAsync(account);
 
             //Act
-            clientService.DeleteAccount(account.Id);
+            await clientService.DeleteAccountAsync(account.Id);
 
             //Assert
-            Assert.DoesNotContain(account, clientService.GetClient(client.Id).AccountCollection);
+            var foundClient = await clientService.GetClientAsync(client.Id);
+            Assert.DoesNotContain(account, foundClient.AccountCollection);
         }
 
         [Fact]
-        public void ImportDataFromCsv_PositiveTest()
+        public async Task ImportDataFromCsv_PositiveTestAsync()
         {
             //Arrange
             var path = Path.Combine(Directory.GetCurrentDirectory(),
                 "..", "..", "..", "..", "ExportTool", "ExportData");
             var list = new TestDataGenerator().GetClientList(5);
             var exportService = new ExportService();
-            exportService.ExportClientListToCsv(list, path, "Clients.csv");
+            await exportService.ExportClientListToCsvAsync(list, path, "Clients.csv");
             var clientService = new ClientService();
 
             //Act
-            var listFromCSV = exportService.ReadClientListFromCsv(path, "Clients.csv");
-            clientService.AddClientList(listFromCSV);
+            var listFromCSV = await exportService.ReadClientListFromCsvAsync(path, "Clients.csv");
+            await clientService.AddClientListAsync(listFromCSV);
 
             //Assert
             NUnit.Framework.Assert.That(listFromCSV,
-                Is.SubsetOf(clientService.GetClients(new ClientFilter())));
+                Is.SubsetOf(await clientService.GetClientsAsync(new ClientFilter())));
         }
     }
 }

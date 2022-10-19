@@ -4,6 +4,7 @@ using Services.Exceptions;
 using Services.Filters;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace ServiceTests
@@ -11,7 +12,7 @@ namespace ServiceTests
     public class EmployeeServiceTests
     {
         [Fact]
-        public void AddEmployee_PositiveTest()
+        public async Task AddEmployee_PositiveTestAsync()
         {
             //Arrange
             var employeeService = new EmployeeService();
@@ -26,14 +27,14 @@ namespace ServiceTests
             };
 
             //Act
-            employeeService.AddEmployee(employee);
+            await employeeService.AddEmployeeAsync(employee);
 
             //Assert
-            Assert.Equal(employee, employeeService.GetEmployee(employee.Id));
+            Assert.Equal(employee, await employeeService.GetEmployeeAsync(employee.Id));
         }
 
         [Fact]
-        public void AddEmployee_throwsAgeLimitException()
+        public async Task AddEmployee_throwsAgeLimitException()
         {
             //Arrange
             var employeeService = new EmployeeService();
@@ -48,11 +49,11 @@ namespace ServiceTests
             };
 
             //Act Assert
-            Assert.Throws<AgeLimitException>(() => employeeService.AddEmployee(employee));
+            await Assert.ThrowsAsync<AgeLimitException>(async () => await employeeService.AddEmployeeAsync(employee));
         }
 
         [Fact]
-        public void AddEmployee_throwsNoPassportDataException()
+        public async Task AddEmployee_throwsNoPassportDataException()
         {
             //Arrange
             var employeeService = new EmployeeService();
@@ -62,92 +63,92 @@ namespace ServiceTests
             };
 
             //Act Assert
-            Assert.Throws<NoPassportDataException>(() => employeeService.AddEmployee(employee));
+            await Assert.ThrowsAsync<NoPassportDataException>(async () => await employeeService.AddEmployeeAsync(employee));
         }
 
         [Fact]
-        public void GetEmployees_filteredByFirstName()
+        public async Task GetEmployees_filteredByFirstNameAsync()
         {
             //Arrange
             var testDataGenerator = new TestDataGenerator();
             var employeeService = new EmployeeService();
-            employeeService.AddEmployeeList(testDataGenerator.GetEmployeeList(100));
+            await employeeService.AddEmployeeListAsync(testDataGenerator.GetEmployeeList(100));
             var filterByFirstName = new EmployeeFilter()
             {
                 FirstName = "Ирина"
             };
 
             //Act
-            var filtredEmployees = employeeService.GetEmployees(filterByFirstName);
+            var filtredEmployees = await employeeService.GetEmployeesAsync(filterByFirstName);
 
             //Assert
             Assert.True(filtredEmployees.All(x => x.FirstName.Contains("Ирина")));
         }
 
         [Fact]
-        public void GetEmployees_filteredByLastName()
+        public async Task GetEmployees_filteredByLastNameAsync()
         {
             //Arrange
             var testDataGenerator = new TestDataGenerator();
             var employeeService = new EmployeeService();
-            employeeService.AddEmployeeList(testDataGenerator.GetEmployeeList(100));
+            await employeeService.AddEmployeeListAsync(testDataGenerator.GetEmployeeList(100));
             var filterByLastName = new EmployeeFilter()
             {
                 LastName = "Васильев"
             };
 
             //Act
-            var filtredEmployees = employeeService.GetEmployees(filterByLastName);
+            var filtredEmployees = await employeeService.GetEmployeesAsync(filterByLastName);
 
             //Assert
             Assert.True(filtredEmployees.All(x => x.LastName.Contains("Васильев")));
         }
 
         [Fact]
-        public void GetEmployees_filteredByPhoneNumber()
+        public async Task GetEmployees_filteredByPhoneNumberAsync()
         {
             //Arrange
             var testDataGenerator = new TestDataGenerator();
             var employeeService = new EmployeeService();
-            employeeService.AddEmployeeList(testDataGenerator.GetEmployeeList(100));
+            await employeeService.AddEmployeeListAsync(testDataGenerator.GetEmployeeList(100));
             var filterByPhoneNumber = new EmployeeFilter()
             {
                 PhoneNumber = 77700077
             };
 
             //Act
-            var filtredEmployees = employeeService.GetEmployees(filterByPhoneNumber);
+            var filtredEmployees = await employeeService.GetEmployeesAsync(filterByPhoneNumber);
 
             //Assert
             Assert.True(filtredEmployees.All(x => x.PhoneNumber.ToString().Contains(77700077.ToString())));
         }
 
         [Fact]
-        public void GetEmployees_filteredByPassportNumber()
+        public async Task GetEmployees_filteredByPassportNumberAsync()
         {
             //Arrange
             var testDataGenerator = new TestDataGenerator();
             var employeeService = new EmployeeService();
-            employeeService.AddEmployeeList(testDataGenerator.GetEmployeeList(100));
+            await employeeService.AddEmployeeListAsync(testDataGenerator.GetEmployeeList(100));
             var filterByPassportNumber = new EmployeeFilter()
             {
                 PassportNumber = 900000000
             };
 
             //Act
-            var filtredEmployees = employeeService.GetEmployees(filterByPassportNumber);
+            var filtredEmployees = await employeeService.GetEmployeesAsync(filterByPassportNumber);
 
             //Assert
             Assert.True(filtredEmployees.All(x => x.PassportNumber.ToString().Contains(900000000.ToString())));
         }
 
         [Fact]
-        public void GetEmployees_filteredByDateOfBirth()
+        public async Task GetEmployees_filteredByDateOfBirthAsync()
         {
             //Arrange
             var testDataGenerator = new TestDataGenerator();
             var employeeService = new EmployeeService();
-            employeeService.AddEmployeeList(testDataGenerator.GetEmployeeList(100));
+            await employeeService.AddEmployeeListAsync(testDataGenerator.GetEmployeeList(100));
             var filterByDateOfBirth = new EmployeeFilter()
             {
                 MinDate = new DateTime(1990, 1, 1),
@@ -155,7 +156,7 @@ namespace ServiceTests
             };
 
             //Act
-            var filtredEmployees = employeeService.GetEmployees(filterByDateOfBirth);
+            var filtredEmployees = await employeeService.GetEmployeesAsync(filterByDateOfBirth);
 
             //Assert
             Assert.True(filtredEmployees.All(x =>
@@ -164,12 +165,12 @@ namespace ServiceTests
         }
 
         [Fact]
-        public void GetEmployees_filteredWithPagination()
+        public async Task GetEmployees_filteredWithPaginationAsync()
         {
             //Arrange
             var testDataGenerator = new TestDataGenerator();
             var employeeService = new EmployeeService();
-            employeeService.AddEmployeeList(testDataGenerator.GetEmployeeList(100));
+            await employeeService.AddEmployeeListAsync(testDataGenerator.GetEmployeeList(100));
             var filterWithPagination = new EmployeeFilter()
             {
                 pageNumber = 3,
@@ -177,17 +178,16 @@ namespace ServiceTests
             };
 
             //Act
-            var filtredEmployees = employeeService.GetEmployees(filterWithPagination);
+            var filtredEmployees = await employeeService.GetEmployeesAsync(filterWithPagination);
 
             //Assert
             Assert.Equal(10, filtredEmployees.Count);
         }
 
         [Fact]
-        public void Delete_PositiveTest()
+        public async Task Delete_PositiveTestAsync()
         {
             //Arrange
-            var testDataGenerator = new TestDataGenerator();
             var employeeService = new EmployeeService();
             var employee = new Employee
             {
@@ -198,17 +198,17 @@ namespace ServiceTests
                 PassportNumber = 800000000,
                 DateOfBirth = new DateTime(2000, 1, 1)
             };
-            employeeService.AddEmployee(employee);
+            await employeeService.AddEmployeeAsync(employee);
 
             //Act
-            employeeService.DeleteEmployee(employee.Id);
+            await employeeService.DeleteEmployeeAsync(employee.Id);
 
             //Asssert
-            Assert.Null(employeeService.GetEmployee(employee.Id));
+            Assert.Null(await employeeService.GetEmployeeAsync(employee.Id));
         }
 
         [Fact]
-        public void Update_PositiveTest()
+        public async Task Update_PositiveTestAsync()
         {
             //Arrange
             var employeeService = new EmployeeService();
@@ -221,14 +221,15 @@ namespace ServiceTests
                 PassportNumber = 800000002,
                 DateOfBirth = new DateTime(2000, 1, 1)
             };
-            employeeService.AddEmployee(employee);
+            await employeeService.AddEmployeeAsync(employee);
             employee.FirstName = "Саша";
 
             //Act
-            employeeService.UpdateEmployee(employee);
+            await employeeService.UpdateEmployeeAsync(employee);
 
             //Assert
-            Assert.Equal("Саша", employeeService.GetEmployee(employee.Id).FirstName);
+            var foundEmployees = await employeeService.GetEmployeeAsync(employee.Id);
+            Assert.Equal("Саша", foundEmployees.FirstName);
         }
     }
 }

@@ -6,20 +6,20 @@ namespace Services
 {
     public class CashDispenserService
     {
-        public Task CashOut(double amount, Account account)
+        public async Task CashOut(double amount, Account account)
         {
             if (account.Amount < amount)
                 throw new Exception("Недостаточно стредств");
 
-            return new Task(() =>
+             await Task.Run(async () =>
             {
                 account.Amount -= amount;
 
                 var clientService = new ClientService();
 
-                clientService.UpdateAccount(account);
+                await clientService.UpdateAccountAsync(account);
 
-                Task.Delay(7000);
+                await Task.Delay(1000);
             });
         }
     }
